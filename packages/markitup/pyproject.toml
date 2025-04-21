@@ -51,10 +51,7 @@ docx = ["mammoth", "lxml"]
 xlsx = ["pandas", "openpyxl"]
 xls = ["pandas", "xlrd"]
 pdf = ["pdfminer.six"]
-outlook = ["olefile"]
-audio-transcription = ["pydub", "SpeechRecognition"]
-youtube-transcription = ["youtube-transcript-api"]
-az-doc-intel = ["azure-ai-documentintelligence", "azure-identity"]
+
 
 [tool.hatch.version]
 path = "src/markitup/__about__.py"

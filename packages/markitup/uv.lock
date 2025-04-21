@@ -532,10 +532,6 @@ audio-transcription = [
     { name = "pydub" },
     { name = "speechrecognition" },
 ]
-az-doc-intel = [
-    { name = "azure-ai-documentintelligence" },
-    { name = "azure-identity" },
-]
 docx = [
     { name = "lxml" },
     { name = "mammoth" },
@@ -564,9 +560,7 @@ youtube-transcription = [
 [package.metadata]
 requires-dist = [
     { name = "azure-ai-documentintelligence", marker = "extra == 'all'" },
-    { name = "azure-ai-documentintelligence", marker = "extra == 'az-doc-intel'" },
     { name = "azure-identity", marker = "extra == 'all'" },
-    { name = "azure-identity", marker = "extra == 'az-doc-intel'" },
     { name = "beautifulsoup4" },
     { name = "charset-normalizer" },
     { name = "lxml", marker = "extra == 'all'" },
@@ -596,7 +590,7 @@ requires-dist = [
     { name = "youtube-transcript-api", marker = "extra == 'all'", specifier = "~=1.0.0" },
     { name = "youtube-transcript-api", marker = "extra == 'youtube-transcription'" },
 ]
-provides-extras = ["all", "audio-transcription", "az-doc-intel", "docx", "outlook", "pdf", "pptx", "xls", "xlsx", "youtube-transcription"]
+provides-extras = ["all", "audio-transcription", "docx", "outlook", "pdf", "pptx", "xls", "xlsx", "youtube-transcription"]
 
 [[package]]
 name = "mpmath"
