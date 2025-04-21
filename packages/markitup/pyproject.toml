@@ -35,13 +35,10 @@ dependencies = [
   "openpyxl",
   "xlrd",
   "lxml",
-  "pdfminer.six",
   "olefile",
   "pydub",
   "SpeechRecognition",
-  "youtube-transcript-api~=1.0.0",
-  "azure-ai-documentintelligence",
-  "azure-identity"
+  "pymupdf>=1.25.5",
 ]
 
 [tool.hatch.version]
