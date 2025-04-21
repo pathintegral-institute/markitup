@@ -8,13 +8,15 @@ from ._pdf_converter import PdfConverter
 from ._docx_converter import DocxConverter
 from ._xlsx_converter import XlsxConverter, XlsConverter
 from ._pptx_converter import PptxConverter
-from ._audio_converter import AudioConverter
+# from ._audio_converter import AudioConverter
 from ._csv_converter import CsvConverter
+from ._markdownify import _CustomMarkdownify
 
 __all__ = [
     "PlainTextConverter",
     "HtmlConverter",
     "RssConverter",
+    "_CustomMarkdownify",
     "WikipediaConverter",
     "YouTubeConverter",
     "IpynbConverter",
@@ -25,7 +27,7 @@ __all__ = [
     "XlsConverter",
     "PptxConverter",
     "ImageConverter",
-    "AudioConverter",
+    # "AudioConverter",
     "OutlookMsgConverter",
     "ZipConverter",
     "DocumentIntelligenceConverter",

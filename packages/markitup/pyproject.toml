@@ -28,10 +28,7 @@ dependencies = [
   "markdownify",
   "magika~=0.6.1",
   "charset-normalizer",
-]
-
-[project.optional-dependencies]
-all = [
+  "python-magic>=0.4.27",
   "python-pptx",
   "mammoth",
   "pandas",
@@ -46,12 +43,6 @@ all = [
   "azure-ai-documentintelligence",
   "azure-identity"
 ]
-pptx = ["python-pptx"]
-docx = ["mammoth", "lxml"]
-xlsx = ["pandas", "openpyxl"]
-xls = ["pandas", "xlrd"]
-pdf = ["pdfminer.six"]
-
 
 [tool.hatch.version]
 path = "src/markitup/__about__.py"
@@ -60,16 +51,14 @@ path = "src/markitup/__about__.py"
 markitup = "markitup.__main__:main"
 
 [tool.hatch.envs.default]
-features = ["all"]
+# No features needed since everything is installed by default
 
 [tool.hatch.envs.hatch-test]
-features = ["all"]
 extra-dependencies = [
   "openai",
 ]
 
 [tool.hatch.envs.types]
-features = ["all"]
 extra-dependencies = [
   "openai",
   "mypy>=1.0.0",

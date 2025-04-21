@@ -11,23 +11,14 @@ from operator import attrgetter
 from ._html_converter import HtmlConverter
 from .._base_converter import DocumentConverter, DocumentConverterResult
 from .._stream_info import StreamInfo
-from .._exceptions import MissingDependencyException, MISSING_DEPENDENCY_MESSAGE
-
-# Try loading optional (but in this case, required) dependencies
-# Save reporting of any exceptions for later
-_dependency_exc_info = None
-try:
-    import pptx
-except ImportError:
-    # Preserve the error and stack trace for later
-    _dependency_exc_info = sys.exc_info()
+import pptx
 
 
-ACCEPTED_MIME_TYPE_PREFIXES = [
+ACCEPTED_MAGIC_TYPE_PREFIXES = [
     "application/vnd.openxmlformats-officedocument.presentationml",
 ]
 
-ACCEPTED_FILE_EXTENSIONS = [".pptx"]
+ACCEPTED_FILE_CATEGORY = [".pptx"]
 
 
 class PptxConverter(DocumentConverter):
@@ -45,14 +36,14 @@ class PptxConverter(DocumentConverter):
         stream_info: StreamInfo,
         **kwargs: Any,  # Options to pass to the converter
     ) -> bool:
-        mimetype = (stream_info.mimetype or "").lower()
-        extension = (stream_info.extension or "").lower()
+        magic_type = (stream_info.magic_type or "").lower()
+        category = (stream_info.category or "").lower()
 
-        if extension in ACCEPTED_FILE_EXTENSIONS:
+        if category in ACCEPTED_FILE_CATEGORY:
             return True
 
-        for prefix in ACCEPTED_MIME_TYPE_PREFIXES:
-            if mimetype.startswith(prefix):
+        for prefix in ACCEPTED_MAGIC_TYPE_PREFIXES:
+            if magic_type.startswith(prefix):
                 return True
 
         return False
@@ -63,19 +54,6 @@ class PptxConverter(DocumentConverter):
         stream_info: StreamInfo,
         **kwargs: Any,  # Options to pass to the converter
     ) -> DocumentConverterResult:
-        # Check the dependencies
-        if _dependency_exc_info is not None:
-            raise MissingDependencyException(
-                MISSING_DEPENDENCY_MESSAGE.format(
-                    converter=type(self).__name__,
-                    extension=".pptx",
-                    feature="pptx",
-                )
-            ) from _dependency_exc_info[
-                1
-            ].with_traceback(  # type: ignore[union-attr]
-                _dependency_exc_info[2]
-            )
 
         # Perform the conversion
         presentation = pptx.Presentation(file_stream)
@@ -109,15 +87,12 @@ class PptxConverter(DocumentConverter):
                     alt_text = re.sub(r"\s+", " ", alt_text).strip()
 
                     # If keep_data_uris is True, use base64 encoding for images
-                    if kwargs.get("keep_data_uris", False):
-                        blob = shape.image.blob
-                        content_type = shape.image.content_type or "image/png"
-                        b64_string = base64.b64encode(blob).decode("utf-8")
-                        md_content += f"\n![{alt_text}](data:{content_type};base64,{b64_string})\n"
-                    else:
-                        # A placeholder name
-                        filename = re.sub(r"\W", "", shape.name) + ".jpg"
-                        md_content += "\n![" + alt_text + "](" + filename + ")\n"
+
+                    blob = shape.image.blob
+                    content_type = shape.image.content_type or "image/png"
+                    b64_string = base64.b64encode(blob).decode("utf-8")
+                    md_content += f"\n![{alt_text}](data:{content_type};base64,{b64_string})\n"
+
 
                 # Tables
                 if self._is_table(shape):

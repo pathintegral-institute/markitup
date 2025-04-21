@@ -25,22 +25,12 @@ from ._uri_utils import parse_data_uri, file_uri_to_path
 from .converters import (
     PlainTextConverter,
     HtmlConverter,
-    RssConverter,
-    WikipediaConverter,
-    YouTubeConverter,
-    IpynbConverter,
-    BingSerpConverter,
     PdfConverter,
     DocxConverter,
     XlsxConverter,
     XlsConverter,
     PptxConverter,
-    ImageConverter,
-    AudioConverter,
-    OutlookMsgConverter,
-    ZipConverter,
-    EpubConverter,
-    DocumentIntelligenceConverter,
+    # AudioConverter,
     CsvConverter,
 )
 
