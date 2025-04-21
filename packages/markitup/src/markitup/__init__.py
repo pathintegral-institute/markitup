@@ -5,8 +5,6 @@
 from .__about__ import __version__
 from ._markitup import (
     MarkItUp,
-    PRIORITY_SPECIFIC_FILE_FORMAT,
-    PRIORITY_GENERIC_FILE_FORMAT,
 )
 from ._base_converter import DocumentConverterResult, DocumentConverter
 from ._stream_info import StreamInfo
@@ -29,6 +27,4 @@ __all__ = [
     "FileConversionException",
     "UnsupportedFormatException",
     "StreamInfo",
-    "PRIORITY_SPECIFIC_FILE_FORMAT",
-    "PRIORITY_GENERIC_FILE_FORMAT",
 ]

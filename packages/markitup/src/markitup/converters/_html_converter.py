@@ -19,25 +19,6 @@ ACCEPTED_FILE_CATEGORY = [
 
 class HtmlConverter(DocumentConverter):
     """Anything with content type text/html"""
-
-    def accepts(
-        self,
-        file_stream: BinaryIO,
-        stream_info: StreamInfo,
-        **kwargs: Any,  # Options to pass to the converter
-    ) -> bool:
-        magic_type = (stream_info.magic_type or "").lower()
-        category = (stream_info.category or "").lower()
-
-        if category in ACCEPTED_FILE_CATEGORY:
-            return True
-
-        for prefix in ACCEPTED_MAGIC_TYPE_PREFIXES:
-            if magic_type.startswith(prefix):
-                return True
-
-        return False
-
     def convert(
         self,
         file_stream: BinaryIO,

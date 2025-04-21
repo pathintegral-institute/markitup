@@ -1,8 +1,9 @@
 import os
 import tempfile
 from warnings import warn
-from typing import Any, Union, BinaryIO, Optional, List
+from typing import Any, Union, BinaryIO, Optional, List, Dict
 from ._stream_info import StreamInfo
+import re
 
 
 class DocumentConverterResult:
@@ -26,6 +27,61 @@ class DocumentConverterResult:
         """
         self.markdown = markdown
         self.title = title
+    
+    def to_llm(self) -> List[Dict[str, Any]]:
+        """
+        Convert markdown with base64 images to a format compatible with OpenAI's API.
+        
+        This function parses the markdown content, extracting text and images in their
+        original order, and returns a list of content elements in OpenAI's format.
+        
+        Returns:
+            List[Dict[str, Any]]: A list of dictionaries representing the content elements
+                                (text and images) in their original order.
+        """
+        
+
+        # Pattern to match markdown image syntax with base64 data
+        pattern = r'!\[(.*?)\]\(data:(.*?);base64,(.*?)\)'
+
+        content = []
+        last_end = 0
+
+        # Process the document sequentially to maintain order
+        for match in re.finditer(pattern, self.markdown):
+            # Add the text before this image if any
+            if match.start() > last_end:
+                text_chunk = self.markdown[last_end:match.start()].strip()
+                if text_chunk:
+                    content.append({
+                        "type": "text",
+                        "text": text_chunk
+                    })
+
+            # Extract image data
+            alt_text, content_type, b64_data = match.groups()
+
+            # Add the image
+            content.append({
+                "type": "image",
+                "image_url": {
+                    "url": f"data:{content_type};base64,{b64_data}"
+                },
+                "alt_text": alt_text
+            })
+
+            last_end = match.end()
+
+        # Add any remaining text after the last image
+        if last_end < len(self.markdown):
+            text_chunk = self.markdown[last_end:].strip()
+            if text_chunk:
+                content.append({
+                    "type": "text",
+                    "text": text_chunk
+                })
+
+        return content
 
     @property
     def text_content(self) -> str:
@@ -44,45 +100,6 @@ class DocumentConverterResult:
 
 class DocumentConverter:
     """Abstract superclass of all DocumentConverters."""
-
-    def accepts(
-        self,
-        file_stream: BinaryIO,
-        stream_info: StreamInfo,
-        **kwargs: Any,  # Options to pass to the converter
-    ) -> bool:
-        """
-        Return a quick determination on if the converter should attempt converting the document.
-        This is primarily based `stream_info` (typically, `stream_info.mimetype`, `stream_info.extension`).
-        In cases where the data is retrieved via HTTP, the `steam_info.url` might also be referenced to
-        make a determination (e.g., special converters for Wikipedia, YouTube etc).
-        Finally, it is conceivable that the `stream_info.filename` might be used to in cases
-        where the filename is well-known (e.g., `Dockerfile`, `Makefile`, etc)
-
-        NOTE: The method signature is designed to match that of the convert() method. This provides some
-        assurance that, if accepts() returns True, the convert() method will also be able to handle the document.
-
-        IMPORTANT: In rare cases, (e.g., OutlookMsgConverter) we need to read more from the stream to make a final
-        determination. Read operations inevitably advances the position in file_stream. In these case, the position
-        MUST be reset it MUST be reset before returning. This is because the convert() method may be called immediately
-        after accepts(), and will expect the file_stream to be at the original position.
-
-        E.g.,
-        cur_pos = file_stream.tell() # Save the current position
-        data = file_stream.read(100) # ... peek at the first 100 bytes, etc.
-        file_stream.seek(cur_pos)    # Reset the position to the original position
-
-        Prameters:
-        - file_stream: The file-like object to convert. Must support seek(), tell(), and read() methods.
-        - stream_info: The StreamInfo object containing metadata about the file (mimetype, extension, charset, set)
-        - kwargs: Additional keyword arguments for the converter.
-
-        Returns:
-        - bool: True if the converter can handle the document, False otherwise.
-        """
-        raise NotImplementedError(
-            f"The subclass, {type(self).__name__}, must implement the accepts() method to determine if they can handle the document."
-        )
 
     def convert(
         self,
