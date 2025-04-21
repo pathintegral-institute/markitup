@@ -57,11 +57,6 @@ audio-transcription = ["pydub", "SpeechRecognition"]
 youtube-transcription = ["youtube-transcript-api"]
 az-doc-intel = ["azure-ai-documentintelligence", "azure-identity"]
 
-[project.urls]
-Documentation = "https://github.com/microsoft/markitup#readme"
-Issues = "https://github.com/microsoft/markitup/issues"
-Source = "https://github.com/microsoft/markitup"
-
 [tool.hatch.version]
 path = "src/markitup/__about__.py"
 
