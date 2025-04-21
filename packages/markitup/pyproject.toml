@@ -6,7 +6,6 @@ build-backend = "hatchling.build"
 name = "markitup"
 dynamic = ["version"]
 description = 'Utility tool for converting various files to Markdown'
-readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 keywords = []
