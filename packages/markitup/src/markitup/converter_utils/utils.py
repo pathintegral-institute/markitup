@@ -75,21 +75,18 @@ def detect_file_types(file_dict):
             category = "audio"
         elif magic_type.startswith("video/"):
             category = "video"
-        elif (
-            magic_type.startswith("application/vnd.ms-excel")
-            or magic_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        ):
-            category = "xls"
-        elif (
-            magic_type.startswith("application/vnd.ms-powerpoint")
-            or magic_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        ):
-            category = "ppt"
-        elif (
-            magic_type.startswith("application/msword")
-            or magic_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ):
-            category = "doc"
+        elif magic_type.startswith("application/vnd.ms-excel"):
+            category = 'xls'
+        elif magic_type.startswith("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
+            category = "xlsx"
+        elif magic_type.startswith("application/vnd.ms-powerpoint"):
+            category = 'ppt'
+        elif magic_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+            category = "pptx"
+        elif magic_type.startswith("application/msword"):
+            category = 'doc'
+        elif magic_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+            category = "docx"
         elif magic_type == "application/pdf":
             category = "pdf"
         elif magic_type.startswith("text/"):
@@ -97,11 +94,8 @@ def detect_file_types(file_dict):
         else:
             category = "other"
 
-        # Store the results
-        result[filename] = StreamInfo(magic_type=magic_type, category=category)
-
-        # Reset stream position
         byte_stream.seek(original_position)
+        result[filename] = StreamInfo(magic_type=magic_type, category=category)
 
     return result
 

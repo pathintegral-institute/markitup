@@ -58,6 +58,10 @@ class MarkItUp:
                     return PdfConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "audio":
                     return AudioConverter(config=self.config).convert(stream, stream_info), stream_info
+                case "xlsx":
+                    return XlsxConverter().convert(stream, stream_info), stream_info
+                case "xls":
+                    return XlsConverter().convert(stream, stream_info), stream_info
         except FailedConversionAttempt:
             raise FileConversionException(
                 f"Failed to convert file of type {stream_info.magic_type}")
