@@ -32,8 +32,6 @@ dependencies = [
   "python-pptx",
   "mammoth",
   "pandas",
-  "openpyxl",
-  "xlrd",
   "lxml",
   "olefile",
   "pydub",

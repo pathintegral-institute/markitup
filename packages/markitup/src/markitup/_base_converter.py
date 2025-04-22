@@ -2,8 +2,9 @@ import os
 import tempfile
 from warnings import warn
 from typing import Any, Union, BinaryIO, Optional, List, Dict
-from ._stream_info import StreamInfo
+from ._schemas import StreamInfo
 import re
+import base64
 
 
 class DocumentConverterResult:
@@ -11,9 +12,11 @@ class DocumentConverterResult:
 
     def __init__(
         self,
-        markdown: str,
+        markdown: str = "",
         *,
         title: Optional[str] = None,
+        audio_stream: Optional[BinaryIO] = None,
+        stream_info: Optional[StreamInfo] = None,
     ):
         """
         Initialize the DocumentConverterResult.
@@ -26,20 +29,21 @@ class DocumentConverterResult:
         - title: Optional title of the document.
         """
         self.markdown = markdown
+        self.audio_stream = audio_stream
         self.title = title
-    
+        self.stream_info = stream_info
+
     def to_llm(self) -> List[Dict[str, Any]]:
         """
         Convert markdown with base64 images to a format compatible with OpenAI's API.
-        
+
         This function parses the markdown content, extracting text and images in their
         original order, and returns a list of content elements in OpenAI's format.
-        
+
         Returns:
             List[Dict[str, Any]]: A list of dictionaries representing the content elements
                                 (text and images) in their original order.
         """
-        
 
         # Pattern to match markdown image syntax with base64 data
         pattern = r'!\[(.*?)\]\(data:(.*?);base64,(.*?)\)'
@@ -80,7 +84,14 @@ class DocumentConverterResult:
                     "type": "text",
                     "text": text_chunk
                 })
-
+        if self.audio_stream:
+            audio_b64 = base64.b64encode(
+                self.audio_stream.read()).decode('utf-8')
+            content.append({
+                "type": "media",
+                "mime_type": self.stream_info.magic_type,
+                "data": audio_b64
+            })
         return content
 
     @property
@@ -105,7 +116,7 @@ class DocumentConverter:
         self,
         file_stream: BinaryIO,
         stream_info: StreamInfo,
-        **kwargs: Any,  # Options to pass to the converter
+        ** kwargs: Any,  # Options to pass to the converter
     ) -> DocumentConverterResult:
         """
         Convert a document to Markdown text.

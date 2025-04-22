@@ -1,7 +1,11 @@
 import os
 from io import BytesIO
-from markitup._stream_info import StreamInfo
+from markitup._schemas import StreamInfo
 import magic
+import speech_recognition as sr
+import pydub
+import io
+from typing import BinaryIO
 
 
 def read_files_to_bytestreams(folder_path="packages/markitup/tests/test_files"):
@@ -38,65 +42,23 @@ def read_files_to_bytestreams(folder_path="packages/markitup/tests/test_files"):
     return byte_streams
 
 
-def detect_file_types(file_dict):
-    """
-    Detects file types for a dictionary of {filename: BytesIO} pairs
-    using only magic type (content-based detection)
+def transcribe_audio(file_stream: BinaryIO, *, magic_type: str = "audio/mpeg") -> str:
+    audio_format = 'mp3' if magic_type == 'audio/mpeg' else 'wav' if magic_type == 'audio/x-wav' else None
 
-    Args:
-        file_dict (dict): Dictionary with filenames as keys and BytesIO objects as values
+    match audio_format:
+        case 'mp3':
+            audio_segment = pydub.AudioSegment.from_file(
+                file_stream, format=audio_format)
+            audio_source = io.BytesIO()
+            audio_segment.export(audio_source, format="wav")
+            audio_source.seek(0)
+        case 'wav':
+            audio_source = file_stream
+        case _:
+            raise ValueError(f"Unsupported audio format: {magic_type}")
 
-    Returns:
-        dict: Dictionary with filenames as keys and file type information as values
-    """
-    result = {}
-
-    for filename, byte_stream in file_dict.items():
-        # Get the original position to reset later
-        original_position = byte_stream.tell()
-
-        # Reset stream position to beginning
-        byte_stream.seek(0)
-
-        # Get file content for analysis
-        file_content = byte_stream.read()
-
-        # Use python-magic to determine file type based on content
-        magic_type = magic.from_buffer(file_content, mime=True)
-
-        # Determine file category based on magic_type
-        if magic_type.startswith("image/"):
-            category = "image"
-        elif magic_type.startswith("audio/"):
-            category = "audio"
-        elif magic_type.startswith("video/"):
-            category = "video"
-        elif (
-            magic_type.startswith("application/vnd.ms-excel")
-            or magic_type == "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        ):
-            category = "xls"
-        elif (
-            magic_type.startswith("application/vnd.ms-powerpoint")
-            or magic_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        ):
-            category = "ppt"
-        elif (
-            magic_type.startswith("application/msword")
-            or magic_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ):
-            category = "doc"
-        elif magic_type == "application/pdf":
-            category = "pdf"
-        elif magic_type.startswith("text/"):
-            category = "text"
-        else:
-            category = "other"
-
-        # Store the results
-        result[filename] = StreamInfo(magic_type=magic_type, category=category)
-
-        # Reset stream position
-        byte_stream.seek(original_position)
-
-    return result
+    recognizer = sr.Recognizer()
+    with sr.AudioFile(audio_source) as source:
+        audio = recognizer.record(source)
+        transcript = recognizer.recognize_google(audio).strip()
+        return "[No speech detected]" if transcript == "" else transcript

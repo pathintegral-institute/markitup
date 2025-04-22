@@ -3,7 +3,7 @@ from typing import Any, BinaryIO, Optional
 from bs4 import BeautifulSoup
 
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._stream_info import StreamInfo
+from .._schemas import StreamInfo, Config
 from ._markdownify import _CustomMarkdownify
 
 ACCEPTED_MAGIC_TYPE_PREFIXES = [
@@ -19,6 +19,10 @@ ACCEPTED_FILE_CATEGORY = [
 
 class HtmlConverter(DocumentConverter):
     """Anything with content type text/html"""
+
+    def __init__(self, config: Config):
+        self.config = config
+
     def convert(
         self,
         file_stream: BinaryIO,
@@ -27,7 +31,8 @@ class HtmlConverter(DocumentConverter):
     ) -> DocumentConverterResult:
         # Parse the stream
         encoding = "utf-8"
-        soup = BeautifulSoup(file_stream, "html.parser", from_encoding=encoding)
+        soup = BeautifulSoup(file_stream, "html.parser",
+                             from_encoding=encoding)
 
         # Remove javascript and style blocks
         for script in soup(["script", "style"]):
@@ -37,15 +42,17 @@ class HtmlConverter(DocumentConverter):
         body_elm = soup.find("body")
         webpage_text = ""
         if body_elm:
-            webpage_text = _CustomMarkdownify(**kwargs).convert_soup(body_elm)
+            webpage_text = _CustomMarkdownify(
+                config=self.config, **kwargs).convert_soup(body_elm)
         else:
-            webpage_text = _CustomMarkdownify(**kwargs).convert_soup(soup)
+            webpage_text = _CustomMarkdownify(
+                config=self.config, **kwargs).convert_soup(soup)
 
         assert isinstance(webpage_text, str)
 
         # remove leading and trailing \n
         webpage_text = webpage_text.strip()
-
+        print(webpage_text)
         return DocumentConverterResult(
             markdown=webpage_text,
             title=None if soup.title is None else soup.title.string,

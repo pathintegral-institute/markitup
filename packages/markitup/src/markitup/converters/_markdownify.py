@@ -3,6 +3,7 @@ import markdownify
 
 from typing import Any, Optional
 from urllib.parse import quote, unquote, urlparse, urlunparse
+from .._schemas import Config
 
 
 class _CustomMarkdownify(markdownify.MarkdownConverter):
@@ -15,11 +16,13 @@ class _CustomMarkdownify(markdownify.MarkdownConverter):
     - Ensuring URIs are properly escaped, and do not conflict with Markdown syntax
     """
 
-    def __init__(self, **options: Any):
-        options["heading_style"] = options.get("heading_style", markdownify.ATX)
+    def __init__(self, config: Config, **options: Any):
+        options["heading_style"] = options.get(
+            "heading_style", markdownify.ATX)
         options["keep_data_uris"] = options.get("keep_data_uris", False)
         # Explicitly cast options to the expected type if necessary
         super().__init__(**options)
+        self.config = config
 
     def convert_hn(
         self,
@@ -58,9 +61,11 @@ class _CustomMarkdownify(markdownify.MarkdownConverter):
         if href:
             try:
                 parsed_url = urlparse(href)  # type: ignore
-                if parsed_url.scheme and parsed_url.scheme.lower() not in ["http", "https", "file"]:  # type: ignore
+                # type: ignore
+                if parsed_url.scheme and parsed_url.scheme.lower() not in ["http", "https", "file"]:
                     return "%s%s%s" % (prefix, text, suffix)
-                href = urlunparse(parsed_url._replace(path=quote(unquote(parsed_url.path))))  # type: ignore
+                href = urlunparse(parsed_url._replace(
+                    path=quote(unquote(parsed_url.path))))  # type: ignore
             except ValueError:  # It's not clear if this ever gets thrown
                 return "%s%s%s" % (prefix, text, suffix)
 
@@ -95,17 +100,11 @@ class _CustomMarkdownify(markdownify.MarkdownConverter):
         src = el.attrs.get("src", None) or ""
         title = el.attrs.get("title", None) or ""
         title_part = ' "%s"' % title.replace('"', r"\"") if title else ""
-        if (
-            convert_as_inline
-            and el.parent.name not in self.options["keep_inline_images_in"]
-        ):
+
+        if "image" in self.config.modalities:
+            return "![%s](%s%s)" % (alt, src, title_part)
+        else:
             return alt
-
-        # Remove dataURIs
-        if src.startswith("data:") and not self.options["keep_data_uris"]:
-            src = src.split(",")[0] + "..."
-
-        return "![%s](%s%s)" % (alt, src, title_part)
 
     def convert_soup(self, soup: Any) -> str:
         return super().convert_soup(soup)  # type: ignore

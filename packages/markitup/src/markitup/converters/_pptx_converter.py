@@ -10,7 +10,7 @@ from operator import attrgetter
 
 from ._html_converter import HtmlConverter
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._stream_info import StreamInfo
+from .._schemas import StreamInfo, Config
 import pptx
 
 
@@ -26,9 +26,9 @@ class PptxConverter(DocumentConverter):
     Converts PPTX files to Markdown. Supports heading, tables and images with alt text.
     """
 
-    def __init__(self):
-        super().__init__()
-        self._html_converter = HtmlConverter()
+    def __init__(self, config: Config):
+        self._html_converter = HtmlConverter(config=config)
+        self.config = config
 
     def convert(
         self,
@@ -58,7 +58,8 @@ class PptxConverter(DocumentConverter):
 
                     # Also grab any description embedded in the deck
                     try:
-                        alt_text = shape._element._nvXxPr.cNvPr.attrib.get("descr", "")
+                        alt_text = shape._element._nvXxPr.cNvPr.attrib.get(
+                            "descr", "")
                     except Exception:
                         # Unable to get alt text
                         pass
@@ -69,16 +70,20 @@ class PptxConverter(DocumentConverter):
                     alt_text = re.sub(r"\s+", " ", alt_text).strip()
 
                     # If keep_data_uris is True, use base64 encoding for images
-
-                    blob = shape.image.blob
-                    content_type = shape.image.content_type or "image/png"
-                    b64_string = base64.b64encode(blob).decode("utf-8")
-                    md_content += f"\n![{alt_text}](data:{content_type};base64,{b64_string})\n"
-
+                    if 'image' in self.config.modalities:
+                        blob = shape.image.blob
+                        content_type = shape.image.content_type or "image/png"
+                        b64_string = base64.b64encode(blob).decode("utf-8")
+                        md_content += f"\n![{alt_text}](data:{content_type};base64,{b64_string})\n"
+                    else:
+                        filename = re.sub(r"\W", "", shape.name) + ".jpg"
+                        md_content += "\n![" + alt_text + \
+                            "](" + filename + ")\n"
 
                 # Tables
                 if self._is_table(shape):
-                    md_content += self._convert_table_to_markdown(shape.table, **kwargs)
+                    md_content += self._convert_table_to_markdown(
+                        shape.table, **kwargs)
 
                 # Charts
                 if shape.has_chart:
@@ -93,7 +98,8 @@ class PptxConverter(DocumentConverter):
 
                 # Group Shapes
                 if shape.shape_type == pptx.enum.shapes.MSO_SHAPE_TYPE.GROUP:
-                    sorted_shapes = sorted(shape.shapes, key=attrgetter("top", "left"))
+                    sorted_shapes = sorted(
+                        shape.shapes, key=attrgetter("top", "left"))
                     for subshape in sorted_shapes:
                         get_shape_content(subshape, **kwargs)
 
@@ -141,7 +147,8 @@ class PptxConverter(DocumentConverter):
         html_table += "</table></body></html>"
 
         return (
-            self._html_converter.convert_string(html_table, **kwargs).markdown.strip()
+            self._html_converter.convert_string(
+                html_table, **kwargs).markdown.strip()
             + "\n"
         )
 
