@@ -9,7 +9,6 @@ from ._markitup import (
 from ._base_converter import DocumentConverterResult, DocumentConverter
 from ._schemas import StreamInfo, Config
 from ._exceptions import (
-    MarkItUpException,
     MissingDependencyException,
     FailedConversionAttempt,
     FileConversionException,
@@ -21,7 +20,6 @@ __all__ = [
     "MarkItUp",
     "DocumentConverter",
     "DocumentConverterResult",
-    "MarkItUpException",
     "MissingDependencyException",
     "FailedConversionAttempt",
     "FileConversionException",

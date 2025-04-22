@@ -2,6 +2,10 @@ import os
 from io import BytesIO
 from markitup._schemas import StreamInfo
 import magic
+import speech_recognition as sr
+import pydub
+import io
+from typing import BinaryIO
 
 
 def read_files_to_bytestreams(folder_path="packages/markitup/tests/test_files"):
@@ -100,3 +104,25 @@ def detect_file_types(file_dict):
         byte_stream.seek(original_position)
 
     return result
+
+
+def transcribe_audio(file_stream: BinaryIO, *, magic_type: str = "audio/mpeg") -> str:
+    audio_format = 'mp3' if magic_type == 'audio/mpeg' else 'wav' if magic_type == 'audio/x-wav' else None
+
+    match audio_format:
+        case 'mp3':
+            audio_segment = pydub.AudioSegment.from_file(
+                file_stream, format=audio_format)
+            audio_source = io.BytesIO()
+            audio_segment.export(audio_source, format="wav")
+            audio_source.seek(0)
+        case 'wav':
+            audio_source = file_stream
+        case _:
+            raise ValueError(f"Unsupported audio format: {magic_type}")
+
+    recognizer = sr.Recognizer()
+    with sr.AudioFile(audio_source) as source:
+        audio = recognizer.record(source)
+        transcript = recognizer.recognize_google(audio).strip()
+        return "[No speech detected]" if transcript == "" else transcript

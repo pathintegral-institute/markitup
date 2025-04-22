@@ -14,7 +14,7 @@ from .converters import (
     XlsxConverter,
     XlsConverter,
     PptxConverter,
-    # AudioConverter,
+    AudioConverter,
     CsvConverter,
 )
 
@@ -53,9 +53,11 @@ class MarkItUp:
                 case "text":
                     return PlainTextConverter().convert(stream, stream_info), stream_info
                 case "pptx":
-                    return PptxConverter().convert(stream, stream_info), stream_info
+                    return PptxConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "pdf":
-                    return PdfConverter().convert(stream, stream_info), stream_info
+                    return PdfConverter(config=self.config).convert(stream, stream_info), stream_info
+                case "audio":
+                    return AudioConverter(config=self.config).convert(stream, stream_info), stream_info
         except FailedConversionAttempt:
             raise FileConversionException(
                 f"Failed to convert file of type {stream_info.magic_type}")

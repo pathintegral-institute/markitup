@@ -10,6 +10,6 @@ class StreamInfo:
 
 @dataclass
 class Config:
-    modality: List[Literal["image", "audio"]] = field(
+    modalities: List[Literal["image", "audio"]] = field(
         default_factory=lambda: ["image", "audio"]
     )

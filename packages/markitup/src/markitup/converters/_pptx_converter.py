@@ -10,7 +10,7 @@ from operator import attrgetter
 
 from ._html_converter import HtmlConverter
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._schemas import StreamInfo
+from .._schemas import StreamInfo, Config
 import pptx
 
 
@@ -26,9 +26,9 @@ class PptxConverter(DocumentConverter):
     Converts PPTX files to Markdown. Supports heading, tables and images with alt text.
     """
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, config: Config):
         self._html_converter = HtmlConverter()
+        self.config = config
 
     def convert(
         self,
@@ -70,11 +70,15 @@ class PptxConverter(DocumentConverter):
                     alt_text = re.sub(r"\s+", " ", alt_text).strip()
 
                     # If keep_data_uris is True, use base64 encoding for images
-
-                    blob = shape.image.blob
-                    content_type = shape.image.content_type or "image/png"
-                    b64_string = base64.b64encode(blob).decode("utf-8")
-                    md_content += f"\n![{alt_text}](data:{content_type};base64,{b64_string})\n"
+                    if 'image' in self.config.modalities:
+                        blob = shape.image.blob
+                        content_type = shape.image.content_type or "image/png"
+                        b64_string = base64.b64encode(blob).decode("utf-8")
+                        md_content += f"\n![{alt_text}](data:{content_type};base64,{b64_string})\n"
+                    else:
+                        filename = re.sub(r"\W", "", shape.name) + ".jpg"
+                        md_content += "\n![" + alt_text + \
+                            "](" + filename + ")\n"
 
                 # Tables
                 if self._is_table(shape):

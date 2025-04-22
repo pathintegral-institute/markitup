@@ -8,15 +8,7 @@ MISSING_DEPENDENCY_MESSAGE = """{converter} recognized the input as a potential 
 * etc."""
 
 
-class MarkItUpException(Exception):
-    """
-    Base exception class for MarkItUp.
-    """
-
-    pass
-
-
-class MissingDependencyException(MarkItUpException):
+class MissingDependencyException(Exception):
     """
     Converters shipped with MarkItUp may depend on optional
     dependencies. This exception is thrown when a converter's
@@ -31,7 +23,7 @@ class MissingDependencyException(MarkItUpException):
     pass
 
 
-class UnsupportedFormatException(MarkItUpException):
+class UnsupportedFormatException(Exception):
     """
     Thrown when no suitable converter was found for the given file.
     """
@@ -39,17 +31,16 @@ class UnsupportedFormatException(MarkItUpException):
     pass
 
 
-class FailedConversionAttempt(object):
+class FailedConversionAttempt(Exception):
     """
-    Represents an a single attempt to convert a file.
+    Represents a single attempt to convert a file.
     """
 
-    def __init__(self, converter: Any, exc_info: Optional[tuple] = None):
-        self.converter = converter
-        self.exc_info = exc_info
+    def __init__(self):
+        super().__init__(f"Conversion attempt failed!")
 
 
-class FileConversionException(MarkItUpException):
+class FileConversionException(Exception):
     """
     Thrown when a suitable converter was found, but the conversion
     process fails for any reason.
