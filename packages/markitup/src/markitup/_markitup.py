@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 from warnings import warn
 import magic
 
-from ._stream_info import StreamInfo
+from ._schemas import StreamInfo, Config
 
 from .converters import (
     PlainTextConverter,
@@ -33,7 +33,7 @@ class MarkItUp:
 
     def __init__(
         self,
-        config: Optional[Dict[str, Any]] = None,
+        config: Config = Config(),
     ):
         self.config = config
 
@@ -42,10 +42,12 @@ class MarkItUp:
         # Deal with unsupported file types
         match stream_info.category:
             case "ppt":
-                raise UnsupportedFormatException(".ppt files are not supported, try .pptx instead")
+                raise UnsupportedFormatException(
+                    ".ppt files are not supported, try .pptx instead")
             case "other":
-                raise UnsupportedFormatException(f"{stream_info.magic_type} files are not supported")
-        
+                raise UnsupportedFormatException(
+                    f"{stream_info.magic_type} files are not supported")
+
         try:
             match stream_info.category:
                 case "text":
@@ -55,7 +57,8 @@ class MarkItUp:
                 case "pdf":
                     return PdfConverter().convert(stream, stream_info), stream_info
         except FailedConversionAttempt:
-            raise FileConversionException(f"Failed to convert file of type {stream_info.magic_type}")
+            raise FileConversionException(
+                f"Failed to convert file of type {stream_info.magic_type}")
         return stream_info
 
     def _get_stream_info(self, byte_stream: BinaryIO) -> StreamInfo:

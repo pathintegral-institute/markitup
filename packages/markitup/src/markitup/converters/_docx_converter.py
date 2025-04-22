@@ -5,7 +5,7 @@ from typing import BinaryIO, Any
 from ._html_converter import HtmlConverter
 from ..converter_utils.docx.pre_process import pre_process_docx
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._stream_info import StreamInfo
+from .._schemas import StreamInfo
 from .._exceptions import MissingDependencyException, MISSING_DEPENDENCY_MESSAGE
 
 # Try loading optional (but in this case, required) dependencies
@@ -75,6 +75,7 @@ class DocxConverter(HtmlConverter):
         style_map = kwargs.get("style_map", None)
         pre_process_stream = pre_process_docx(file_stream)
         return self._html_converter.convert_string(
-            mammoth.convert_to_html(pre_process_stream, style_map=style_map).value,
+            mammoth.convert_to_html(
+                pre_process_stream, style_map=style_map).value,
             **kwargs,
         )

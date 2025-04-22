@@ -1,6 +1,6 @@
 import os
 from io import BytesIO
-from markitup._stream_info import StreamInfo
+from markitup._schemas import StreamInfo
 import magic
 
 

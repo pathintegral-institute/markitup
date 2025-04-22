@@ -5,7 +5,7 @@ from typing import BinaryIO, Any
 from charset_normalizer import from_bytes
 from ._html_converter import HtmlConverter
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._stream_info import StreamInfo
+from .._schemas import StreamInfo
 
 ACCEPTED_MIME_TYPE_PREFIXES = [
     "text/csv",

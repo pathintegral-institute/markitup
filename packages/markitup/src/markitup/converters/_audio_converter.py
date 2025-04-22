@@ -3,7 +3,7 @@ from typing import Any, BinaryIO, Optional
 
 from ._exiftool import exiftool_metadata
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._stream_info import StreamInfo
+from .._schemas import StreamInfo
 from .._exceptions import MissingDependencyException
 
 ACCEPTED_MIME_TYPE_PREFIXES = [
@@ -91,7 +91,8 @@ class AudioConverter(DocumentConverter):
         # Transcribe
         if audio_format:
             try:
-                transcript = transcribe_audio(file_stream, audio_format=audio_format)
+                transcript = transcribe_audio(
+                    file_stream, audio_format=audio_format)
                 if transcript:
                     md_content += "\n\n### Audio Transcript:\n" + transcript
             except MissingDependencyException:

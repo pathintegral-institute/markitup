@@ -7,7 +7,7 @@ from ._markitup import (
     MarkItUp,
 )
 from ._base_converter import DocumentConverterResult, DocumentConverter
-from ._stream_info import StreamInfo
+from ._schemas import StreamInfo, Config
 from ._exceptions import (
     MarkItUpException,
     MissingDependencyException,
@@ -27,4 +27,5 @@ __all__ = [
     "FileConversionException",
     "UnsupportedFormatException",
     "StreamInfo",
+    "Config"
 ]

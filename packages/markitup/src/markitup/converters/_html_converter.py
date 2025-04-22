@@ -3,7 +3,7 @@ from typing import Any, BinaryIO, Optional
 from bs4 import BeautifulSoup
 
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._stream_info import StreamInfo
+from .._schemas import StreamInfo
 from ._markdownify import _CustomMarkdownify
 
 ACCEPTED_MAGIC_TYPE_PREFIXES = [
@@ -19,6 +19,7 @@ ACCEPTED_FILE_CATEGORY = [
 
 class HtmlConverter(DocumentConverter):
     """Anything with content type text/html"""
+
     def convert(
         self,
         file_stream: BinaryIO,
@@ -27,7 +28,8 @@ class HtmlConverter(DocumentConverter):
     ) -> DocumentConverterResult:
         # Parse the stream
         encoding = "utf-8"
-        soup = BeautifulSoup(file_stream, "html.parser", from_encoding=encoding)
+        soup = BeautifulSoup(file_stream, "html.parser",
+                             from_encoding=encoding)
 
         # Remove javascript and style blocks
         for script in soup(["script", "style"]):

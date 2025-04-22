@@ -3,7 +3,7 @@ from typing import BinaryIO, Any
 from ._html_converter import HtmlConverter
 from .._base_converter import DocumentConverter, DocumentConverterResult
 from .._exceptions import MissingDependencyException, MISSING_DEPENDENCY_MESSAGE
-from .._stream_info import StreamInfo
+from .._schemas import StreamInfo
 
 # Try loading optional (but in this case, required) dependencies
 # Save reporting of any exceptions for later

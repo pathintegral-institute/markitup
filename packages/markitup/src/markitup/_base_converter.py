@@ -2,7 +2,7 @@ import os
 import tempfile
 from warnings import warn
 from typing import Any, Union, BinaryIO, Optional, List, Dict
-from ._stream_info import StreamInfo
+from ._schemas import StreamInfo
 import re
 
 
@@ -27,19 +27,18 @@ class DocumentConverterResult:
         """
         self.markdown = markdown
         self.title = title
-    
+
     def to_llm(self) -> List[Dict[str, Any]]:
         """
         Convert markdown with base64 images to a format compatible with OpenAI's API.
-        
+
         This function parses the markdown content, extracting text and images in their
         original order, and returns a list of content elements in OpenAI's format.
-        
+
         Returns:
             List[Dict[str, Any]]: A list of dictionaries representing the content elements
                                 (text and images) in their original order.
         """
-        
 
         # Pattern to match markdown image syntax with base64 data
         pattern = r'!\[(.*?)\]\(data:(.*?);base64,(.*?)\)'

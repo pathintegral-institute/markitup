@@ -1,11 +1,12 @@
 from typing import BinaryIO, Any
 from charset_normalizer import from_bytes
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._stream_info import StreamInfo
+from .._schemas import StreamInfo
 
 
 class PlainTextConverter(DocumentConverter):
     """Anything with content type text/plain"""
+
     def convert(
         self,
         file_stream: BinaryIO,

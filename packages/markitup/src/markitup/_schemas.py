@@ -1,0 +1,15 @@
+from dataclasses import dataclass, asdict, field
+from typing import Optional, List, Literal
+
+
+@dataclass
+class StreamInfo:
+    magic_type: Optional[str] = None
+    category: Optional[str] = None
+
+
+@dataclass
+class Config:
+    modality: List[Literal["image", "audio"]] = field(
+        default_factory=lambda: ["image", "audio"]
+    )

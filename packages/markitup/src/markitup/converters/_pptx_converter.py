@@ -10,7 +10,7 @@ from operator import attrgetter
 
 from ._html_converter import HtmlConverter
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._stream_info import StreamInfo
+from .._schemas import StreamInfo
 import pptx
 
 
@@ -58,7 +58,8 @@ class PptxConverter(DocumentConverter):
 
                     # Also grab any description embedded in the deck
                     try:
-                        alt_text = shape._element._nvXxPr.cNvPr.attrib.get("descr", "")
+                        alt_text = shape._element._nvXxPr.cNvPr.attrib.get(
+                            "descr", "")
                     except Exception:
                         # Unable to get alt text
                         pass
@@ -75,10 +76,10 @@ class PptxConverter(DocumentConverter):
                     b64_string = base64.b64encode(blob).decode("utf-8")
                     md_content += f"\n![{alt_text}](data:{content_type};base64,{b64_string})\n"
 
-
                 # Tables
                 if self._is_table(shape):
-                    md_content += self._convert_table_to_markdown(shape.table, **kwargs)
+                    md_content += self._convert_table_to_markdown(
+                        shape.table, **kwargs)
 
                 # Charts
                 if shape.has_chart:
@@ -93,7 +94,8 @@ class PptxConverter(DocumentConverter):
 
                 # Group Shapes
                 if shape.shape_type == pptx.enum.shapes.MSO_SHAPE_TYPE.GROUP:
-                    sorted_shapes = sorted(shape.shapes, key=attrgetter("top", "left"))
+                    sorted_shapes = sorted(
+                        shape.shapes, key=attrgetter("top", "left"))
                     for subshape in sorted_shapes:
                         get_shape_content(subshape, **kwargs)
 
@@ -141,7 +143,8 @@ class PptxConverter(DocumentConverter):
         html_table += "</table></body></html>"
 
         return (
-            self._html_converter.convert_string(html_table, **kwargs).markdown.strip()
+            self._html_converter.convert_string(
+                html_table, **kwargs).markdown.strip()
             + "\n"
         )
 
