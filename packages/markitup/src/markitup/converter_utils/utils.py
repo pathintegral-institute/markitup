@@ -42,64 +42,6 @@ def read_files_to_bytestreams(folder_path="packages/markitup/tests/test_files"):
     return byte_streams
 
 
-def detect_file_types(file_dict):
-    """
-    Detects file types for a dictionary of {filename: BytesIO} pairs
-    using only magic type (content-based detection)
-
-    Args:
-        file_dict (dict): Dictionary with filenames as keys and BytesIO objects as values
-
-    Returns:
-        dict: Dictionary with filenames as keys and file type information as values
-    """
-    result = {}
-
-    for filename, byte_stream in file_dict.items():
-        # Get the original position to reset later
-        original_position = byte_stream.tell()
-
-        # Reset stream position to beginning
-        byte_stream.seek(0)
-
-        # Get file content for analysis
-        file_content = byte_stream.read()
-
-        # Use python-magic to determine file type based on content
-        magic_type = magic.from_buffer(file_content, mime=True)
-
-        # Determine file category based on magic_type
-        if magic_type.startswith("image/"):
-            category = "image"
-        elif magic_type.startswith("audio/"):
-            category = "audio"
-        elif magic_type.startswith("video/"):
-            category = "video"
-        elif magic_type.startswith("application/vnd.ms-excel"):
-            category = 'xls'
-        elif magic_type.startswith("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
-            category = "xlsx"
-        elif magic_type.startswith("application/vnd.ms-powerpoint"):
-            category = 'ppt'
-        elif magic_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-            category = "pptx"
-        elif magic_type.startswith("application/msword"):
-            category = 'doc'
-        elif magic_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            category = "docx"
-        elif magic_type == "application/pdf":
-            category = "pdf"
-        elif magic_type.startswith("text/"):
-            category = "text"
-        else:
-            category = "other"
-
-        byte_stream.seek(original_position)
-        result[filename] = StreamInfo(magic_type=magic_type, category=category)
-
-    return result
-
-
 def transcribe_audio(file_stream: BinaryIO, *, magic_type: str = "audio/mpeg") -> str:
     audio_format = 'mp3' if magic_type == 'audio/mpeg' else 'wav' if magic_type == 'audio/x-wav' else None
 

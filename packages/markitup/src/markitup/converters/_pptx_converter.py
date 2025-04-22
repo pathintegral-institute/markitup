@@ -27,7 +27,7 @@ class PptxConverter(DocumentConverter):
     """
 
     def __init__(self, config: Config):
-        self._html_converter = HtmlConverter()
+        self._html_converter = HtmlConverter(config=config)
         self.config = config
 
     def convert(

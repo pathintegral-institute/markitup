@@ -1,7 +1,7 @@
 from typing import BinaryIO, Any
 from ._html_converter import HtmlConverter
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._schemas import StreamInfo
+from .._schemas import StreamInfo, Config
 import pandas as pd
 
 
@@ -10,8 +10,8 @@ class XlsxConverter(DocumentConverter):
     Converts XLSX files to Markdown, with each sheet presented as a separate Markdown table.
     """
 
-    def __init__(self):
-        self._html_converter = HtmlConverter()
+    def __init__(self, config: Config):
+        self._html_converter = HtmlConverter(config=config)
 
     def convert(
         self,
@@ -39,9 +39,8 @@ class XlsConverter(DocumentConverter):
     Converts XLS files to Markdown, with each sheet presented as a separate Markdown table.
     """
 
-    def __init__(self):
-        super().__init__()
-        self._html_converter = HtmlConverter()
+    def __init__(self, config: Config):
+        self._html_converter = HtmlConverter(config=config)
 
     def convert(
         self,

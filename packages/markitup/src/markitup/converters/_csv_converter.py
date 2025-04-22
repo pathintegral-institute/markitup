@@ -3,39 +3,14 @@ import csv
 import io
 from typing import BinaryIO, Any
 from charset_normalizer import from_bytes
-from ._html_converter import HtmlConverter
 from .._base_converter import DocumentConverter, DocumentConverterResult
 from .._schemas import StreamInfo
-
-ACCEPTED_MIME_TYPE_PREFIXES = [
-    "text/csv",
-    "application/csv",
-]
-ACCEPTED_FILE_EXTENSIONS = [".csv"]
 
 
 class CsvConverter(DocumentConverter):
     """
     Converts CSV files to Markdown tables.
     """
-
-    def __init__(self):
-        super().__init__()
-
-    def accepts(
-        self,
-        file_stream: BinaryIO,
-        stream_info: StreamInfo,
-        **kwargs: Any,  # Options to pass to the converter
-    ) -> bool:
-        mimetype = (stream_info.mimetype or "").lower()
-        extension = (stream_info.extension or "").lower()
-        if extension in ACCEPTED_FILE_EXTENSIONS:
-            return True
-        for prefix in ACCEPTED_MIME_TYPE_PREFIXES:
-            if mimetype.startswith(prefix):
-                return True
-        return False
 
     def convert(
         self,
@@ -44,10 +19,7 @@ class CsvConverter(DocumentConverter):
         **kwargs: Any,  # Options to pass to the converter
     ) -> DocumentConverterResult:
         # Read the file content
-        if stream_info.charset:
-            content = file_stream.read().decode(stream_info.charset)
-        else:
-            content = str(from_bytes(file_stream.read()).best())
+        content = str(from_bytes(file_stream.read()).best())
 
         # Parse CSV content
         reader = csv.reader(io.StringIO(content))
