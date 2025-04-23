@@ -17,3 +17,11 @@ While markitdown is a useful tool, its returned content is too text-focused, whi
   - Plain text files
 - Returns OpenAI compatible response, which can be used by most LLM clients
 - Supports command line usage
+
+## Installation
+
+Install directly from GitHub:
+
+```bash
+pip install git+https://github.com/pathintegral-institute/markitup.git
+```
