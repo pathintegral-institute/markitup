@@ -23,9 +23,9 @@ While markitdown is a useful tool, its returned content is too text-focused, whi
 Install directly from GitHub:
 
 ```bash
-pip install git+https://github.com/pathintegral-institute/markitup.git
+pip install git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup
 ```
 
 ```bash
-uv add git+https://github.com/pathintegral-institute/markitup.git
+uv add git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup
 ```
