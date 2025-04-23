@@ -20,7 +20,7 @@ class AudioConverter(DocumentConverter):
         file_stream: BinaryIO,
         stream_info: StreamInfo,
         ** kwargs: Any,  # Options to pass to the converter
-    ) -> Tuple[DocumentConverterResult, StreamInfo]:
+    ) -> DocumentConverterResult:
         md_content = ""
 
         # Transcribe
