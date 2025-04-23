@@ -61,6 +61,8 @@ class MarkItUp:
                     return DocxConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "image":
                     return ImageConverter(config=self.config).convert(stream, stream_info), stream_info
+                case "html":
+                    return HtmlConverter(config=self.config).convert(stream, stream_info), stream_info
                 case _:
                     match stream_info.category:
                         case "ppt":
@@ -117,6 +119,8 @@ class MarkItUp:
         elif magic_type.startswith("text/"):
             if magic_type == "text/csv":
                 category = "csv"
+            elif magic_type == "text/html":
+                category = "html"
             else:
                 category = "text"
         else:
