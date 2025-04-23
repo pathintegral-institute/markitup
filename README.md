@@ -25,3 +25,7 @@ Install directly from GitHub:
 ```bash
 pip install git+https://github.com/pathintegral-institute/markitup.git
 ```
+
+```bash
+uv add git+https://github.com/pathintegral-institute/markitup.git
+```
