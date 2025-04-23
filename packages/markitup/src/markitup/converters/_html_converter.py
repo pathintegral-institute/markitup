@@ -52,10 +52,11 @@ class HtmlConverter(DocumentConverter):
 
         # remove leading and trailing \n
         webpage_text = webpage_text.strip()
-        print(webpage_text)
+
         return DocumentConverterResult(
             markdown=webpage_text,
             title=None if soup.title is None else soup.title.string,
+            config=self.config,
         )
 
     def convert_string(

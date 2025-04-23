@@ -56,7 +56,7 @@ class MarkItUp:
                 case "xls":
                     return XlsConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "csv":
-                    return CsvConverter().convert(stream, stream_info), stream_info
+                    return CsvConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "docx":
                     return DocxConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "image":

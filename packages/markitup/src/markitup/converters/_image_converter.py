@@ -39,8 +39,10 @@ class ImageConverter(DocumentConverter):
 
             return DocumentConverterResult(
                 markdown=markdown_content,
+                config=self.config,
             )
         else:
             return DocumentConverterResult(
                 markdown="No Image read as the supported modalities do not include 'image'",
+                config=self.config,
             )

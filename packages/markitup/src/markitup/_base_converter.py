@@ -2,9 +2,11 @@ import os
 import tempfile
 from warnings import warn
 from typing import Any, Union, BinaryIO, Optional, List, Dict
-from ._schemas import StreamInfo
+from ._schemas import StreamInfo, Config
 import re
 import base64
+from PIL import Image
+from io import BytesIO
 
 
 class DocumentConverterResult:
@@ -13,6 +15,7 @@ class DocumentConverterResult:
     def __init__(
         self,
         markdown: str = "",
+        config: Optional[Config] = None,
         *,
         title: Optional[str] = None,
         audio_stream: Optional[BinaryIO] = None,
@@ -20,18 +23,22 @@ class DocumentConverterResult:
     ):
         """
         Initialize the DocumentConverterResult.
-
+        
         The only required parameter is the converted Markdown text.
         The title, and any other metadata that may be added in the future, are optional.
-
+        
         Parameters:
         - markdown: The converted Markdown text.
+        - config: Optional configuration settings.
         - title: Optional title of the document.
+        - audio_stream: Optional audio data.
+        - stream_info: Optional stream information.
         """
         self.markdown = markdown
         self.audio_stream = audio_stream
         self.title = title
         self.stream_info = stream_info
+        self.config = config
 
     def to_llm(self) -> List[Dict[str, Any]]:
         """
@@ -65,6 +72,18 @@ class DocumentConverterResult:
             # Extract image data
             alt_text, content_type, b64_data = match.groups()
 
+            if self.config.image_use_webp:
+                # Decode base64 data
+                img_data = base64.b64decode(b64_data)
+                
+                # Check if it's already a WebP image
+                if "webp" not in content_type.lower():
+                    # Convert to WebP
+                    webp_data = self._convert_image_to_webp(img_data)
+                    # Replace with WebP data
+                    b64_data = base64.b64encode(webp_data).decode('utf-8')
+                    content_type = "image/webp"
+
             # Add the image
             content.append({
                 "type": "image",
@@ -93,6 +112,28 @@ class DocumentConverterResult:
                 "data": audio_b64
             })
         return content
+
+    def _convert_image_to_webp(self, image_data: bytes, quality: int = 80) -> bytes:
+        """
+        Convert image data to WebP format.
+        
+        Parameters:
+        - image_data: The original image data as bytes.
+        - quality: The quality setting (0-100) for WebP conversion.
+        
+        Returns:
+        - WebP converted image data as bytes.
+        """
+        img = Image.open(BytesIO(image_data))
+        # Convert to RGB if image has alpha channel or is not in RGB mode
+        if img.mode in ('RGBA', 'LA') or (img.mode != 'RGB' and img.mode != 'L'):
+            img = img.convert('RGB')
+            
+        # Save as WebP to a BytesIO object
+        webp_buffer = BytesIO()
+        img.save(webp_buffer, format="WEBP", quality=quality)
+        webp_buffer.seek(0)
+        return webp_buffer.read()
 
     @property
     def text_content(self) -> str:
