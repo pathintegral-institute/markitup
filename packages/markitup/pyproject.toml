@@ -37,6 +37,8 @@ dependencies = [
   "pydub",
   "SpeechRecognition",
   "pymupdf>=1.25.5",
+  "openpyxl>=3.1.5",
+  "xlrd>=2.0.1",
 ]
 
 [tool.hatch.version]

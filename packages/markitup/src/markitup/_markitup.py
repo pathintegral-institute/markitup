@@ -3,7 +3,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 from warnings import warn
 import magic
-
+import mimetypes
 from ._schemas import StreamInfo, Config
 
 from .converters import (
@@ -38,13 +38,13 @@ class MarkItUp:
     ):
         self.config = config
 
-    def convert(self, stream: BinaryIO) -> Dict[DocumentConverterResult, StreamInfo]:
-        stream_info: StreamInfo = self._get_stream_info(stream)
+    def convert(self, stream: BinaryIO, file_name: str) -> Dict[DocumentConverterResult, StreamInfo]:
+        stream_info: StreamInfo = self._get_stream_info(stream, file_name)
         # Deal with unsupported file types
         try:
             match stream_info.category:
                 case "text":
-                    return PlainTextConverter().convert(stream, stream_info), stream_info
+                    return PlainTextConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "pptx":
                     return PptxConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "pdf":
@@ -78,10 +78,7 @@ class MarkItUp:
             raise FileConversionException(
                 f"Failed to convert file of type {stream_info.magic_type}")
 
-    def _get_stream_info(self, byte_stream: BinaryIO) -> StreamInfo:
-        original_position = byte_stream.tell()
-
-        # Reset stream position to beginning
+    def _get_stream_info(self, byte_stream: BinaryIO, filename: str) -> StreamInfo:
         byte_stream.seek(0)
 
         # Get file content for analysis
@@ -89,6 +86,10 @@ class MarkItUp:
 
         # Use python-magic to determine file type based on content
         magic_type = magic.from_buffer(file_content, mime=True)
+        if magic_type == "application/octet-stream":
+            guessed_type, _ = mimetypes.guess_type(filename)
+            if guessed_type:
+                magic_type = guessed_type
 
         # Determine file category based on magic_type
         if magic_type.startswith("image/"):
@@ -96,7 +97,7 @@ class MarkItUp:
                 category = "image"
             else:
                 category = "other"
-        elif magic_type.startswith("audio/"):
+        elif magic_type ==("audio/mpeg"):
             category = "audio"
         elif magic_type.startswith("video/"):
             category = "video"
@@ -126,5 +127,5 @@ class MarkItUp:
         else:
             category = "other"
 
-        byte_stream.seek(original_position)
+        byte_stream.seek(0)
         return StreamInfo(magic_type=magic_type, category=category)
