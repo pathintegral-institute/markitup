@@ -55,13 +55,13 @@ class MarkItUp:
             for plugin_name, converter in plugins.items():
                 self.converters[plugin_name] = converter
         
-    def convert(self, stream: BinaryIO, file_name: str) -> Dict[DocumentConverterResult, StreamInfo]:
+    def convert(self, stream: BinaryIO, file_name: str, **kwargs) -> Dict[DocumentConverterResult, StreamInfo]:
         stream_info: StreamInfo = self._get_stream_info(stream, file_name)
         # Deal with unsupported file types
         try:
             if stream_info.category in self.converters.keys():
                 converter = self.converters[stream_info.category](config=self.config)
-                return converter.convert(stream, stream_info), stream_info
+                return converter.convert(stream, stream_info, **kwargs), stream_info
             else:
                 match stream_info.category:
                     case "ppt":
