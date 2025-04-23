@@ -104,6 +104,7 @@ class DocumentConverterResult:
                     "text": text_chunk
                 })
         if self.audio_stream:
+            print('hello')
             audio_b64 = base64.b64encode(
                 self.audio_stream.read()).decode('utf-8')
             content.append({
