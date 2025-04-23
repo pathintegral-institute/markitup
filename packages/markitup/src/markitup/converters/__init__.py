@@ -10,6 +10,7 @@ from ._xlsx_converter import XlsxConverter, XlsConverter
 from ._pptx_converter import PptxConverter
 from ._audio_converter import AudioConverter
 from ._csv_converter import CsvConverter
+from ._image_converter import ImageConverter
 from ._markdownify import _CustomMarkdownify
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     "_CustomMarkdownify",
     "WikipediaConverter",
     "YouTubeConverter",
+    "ImageConverter"
     "IpynbConverter",
     "BingSerpConverter",
     "PdfConverter",
