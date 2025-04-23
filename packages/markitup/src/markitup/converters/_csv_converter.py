@@ -4,13 +4,15 @@ import io
 from typing import BinaryIO, Any
 from charset_normalizer import from_bytes
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._schemas import StreamInfo
+from .._schemas import StreamInfo, Config
 
 
 class CsvConverter(DocumentConverter):
     """
     Converts CSV files to Markdown tables.
     """
+    def __init__(self, config: Config):
+        self.config = config
 
     def convert(
         self,
@@ -48,4 +50,4 @@ class CsvConverter(DocumentConverter):
 
         result = "\n".join(markdown_table)
 
-        return DocumentConverterResult(markdown=result)
+        return DocumentConverterResult(markdown=result, config=self.config)

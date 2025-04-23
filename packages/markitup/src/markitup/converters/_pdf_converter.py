@@ -63,4 +63,5 @@ class PdfConverter(DocumentConverter):
         doc.close()
         return DocumentConverterResult(
             markdown=markdown_content,
+            config=self.config,
         )

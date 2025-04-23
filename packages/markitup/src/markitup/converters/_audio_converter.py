@@ -29,8 +29,8 @@ class AudioConverter(DocumentConverter):
                 file_stream, magic_type=stream_info.magic_type)
             if transcript:
                 md_content += "\n\n### Audio Transcript:\n" + transcript
-            return DocumentConverterResult(markdown=md_content.strip())
+            return DocumentConverterResult(markdown=md_content.strip(), config=self.config)
         else:
-            return DocumentConverterResult(audio_stream=file_stream, stream_info=stream_info)
+            return DocumentConverterResult(audio_stream=file_stream, stream_info=stream_info, config=self.config)
 
         # Return the result

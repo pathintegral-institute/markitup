@@ -116,7 +116,7 @@ class PptxConverter(DocumentConverter):
                     md_content += notes_frame.text
                 md_content = md_content.strip()
 
-        return DocumentConverterResult(markdown=md_content.strip())
+        return DocumentConverterResult(markdown=md_content.strip(), config=self.config)
 
     def _is_picture(self, shape):
         if shape.shape_type == pptx.enum.shapes.MSO_SHAPE_TYPE.PICTURE:

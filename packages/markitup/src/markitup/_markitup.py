@@ -9,6 +9,7 @@ from ._schemas import StreamInfo, Config
 from .converters import (
     PlainTextConverter,
     HtmlConverter,
+    ImageConverter,
     PdfConverter,
     DocxConverter,
     XlsxConverter,
@@ -55,14 +56,21 @@ class MarkItUp:
                 case "xls":
                     return XlsConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "csv":
-                    return CsvConverter().convert(stream, stream_info), stream_info
+                    return CsvConverter(config=self.config).convert(stream, stream_info), stream_info
                 case "docx":
                     return DocxConverter(config=self.config).convert(stream, stream_info), stream_info
+                case "image":
+                    return ImageConverter(config=self.config).convert(stream, stream_info), stream_info
+                case "html":
+                    return HtmlConverter(config=self.config).convert(stream, stream_info), stream_info
                 case _:
                     match stream_info.category:
                         case "ppt":
                             raise UnsupportedFormatException(
                                 ".ppt files are not supported, try .pptx instead")
+                        case "doc":
+                            raise UnsupportedFormatException(
+                                ".doc files are not supported, try .docx instead")
                         case "other":
                             raise UnsupportedFormatException(
                                 f"{stream_info.magic_type} files are not supported")
@@ -84,7 +92,10 @@ class MarkItUp:
 
         # Determine file category based on magic_type
         if magic_type.startswith("image/"):
-            category = "image"
+            if magic_type in ["image/webp", "image/jpeg", "image/png", "image/jpg"]:
+                category = "image"
+            else:
+                category = "other"
         elif magic_type.startswith("audio/"):
             category = "audio"
         elif magic_type.startswith("video/"):
@@ -108,6 +119,8 @@ class MarkItUp:
         elif magic_type.startswith("text/"):
             if magic_type == "text/csv":
                 category = "csv"
+            elif magic_type == "text/html":
+                category = "html"
             else:
                 category = "text"
         else:

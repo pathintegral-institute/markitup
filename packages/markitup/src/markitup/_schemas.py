@@ -13,3 +13,4 @@ class Config:
     modalities: List[Literal["image", "audio"]] = field(
         default_factory=lambda: ["image", "audio"]
     )
+    image_use_webp: bool = True  # TODO: support files contains images
