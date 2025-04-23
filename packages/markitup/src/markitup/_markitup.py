@@ -35,45 +35,44 @@ class MarkItUp:
     def __init__(
         self,
         config: Config = Config(),
+        plugins: Optional[Dict[str, DocumentConverter]] = None,
     ):
         self.config = config
-
+        self.accepted_categories = ["text", "image", "audio", "pdf", "docx", "pptx", "xlsx", "xls", "csv", "html"]
+        self.converters = {
+            "text": PlainTextConverter,
+            "image": ImageConverter,
+            "audio": AudioConverter,
+            "pdf": PdfConverter,
+            "docx": DocxConverter,
+            "pptx": PptxConverter,
+            "xlsx": XlsxConverter,
+            "xls": XlsConverter,
+            "csv": CsvConverter,
+            "html": HtmlConverter,
+        }
+        if plugins:
+            for plugin_name, converter in plugins.items():
+                self.converters[plugin_name] = converter
+        
     def convert(self, stream: BinaryIO, file_name: str) -> Dict[DocumentConverterResult, StreamInfo]:
         stream_info: StreamInfo = self._get_stream_info(stream, file_name)
         # Deal with unsupported file types
         try:
-            match stream_info.category:
-                case "text":
-                    return PlainTextConverter(config=self.config).convert(stream, stream_info), stream_info
-                case "pptx":
-                    return PptxConverter(config=self.config).convert(stream, stream_info), stream_info
-                case "pdf":
-                    return PdfConverter(config=self.config).convert(stream, stream_info), stream_info
-                case "audio":
-                    return AudioConverter(config=self.config).convert(stream, stream_info), stream_info
-                case "xlsx":
-                    return XlsxConverter(config=self.config).convert(stream, stream_info), stream_info
-                case "xls":
-                    return XlsConverter(config=self.config).convert(stream, stream_info), stream_info
-                case "csv":
-                    return CsvConverter(config=self.config).convert(stream, stream_info), stream_info
-                case "docx":
-                    return DocxConverter(config=self.config).convert(stream, stream_info), stream_info
-                case "image":
-                    return ImageConverter(config=self.config).convert(stream, stream_info), stream_info
-                case "html":
-                    return HtmlConverter(config=self.config).convert(stream, stream_info), stream_info
-                case _:
-                    match stream_info.category:
-                        case "ppt":
-                            raise UnsupportedFormatException(
-                                ".ppt files are not supported, try .pptx instead")
-                        case "doc":
-                            raise UnsupportedFormatException(
-                                ".doc files are not supported, try .docx instead")
-                        case "other":
-                            raise UnsupportedFormatException(
-                                f"{stream_info.magic_type} files are not supported")
+            if stream_info.category in self.converters.keys():
+                converter = self.converters[stream_info.category](config=self.config)
+                return converter.convert(stream, stream_info), stream_info
+            else:
+                match stream_info.category:
+                    case "ppt":
+                        raise UnsupportedFormatException(
+                            ".ppt files are not supported, try .pptx instead")
+                    case "doc":
+                        raise UnsupportedFormatException(
+                            ".doc files are not supported, try .docx instead")
+                    case "other":
+                        raise UnsupportedFormatException(
+                            f"{stream_info.magic_type} files are not supported")
         except FailedConversionAttempt:
             raise FileConversionException(
                 f"Failed to convert file of type {stream_info.magic_type}")
