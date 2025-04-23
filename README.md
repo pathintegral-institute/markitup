@@ -29,3 +29,21 @@ pip install git+https://github.com/pathintegral-institute/markitup.git@main#subd
 ```bash
 uv add git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup
 ```
+
+## Usage
+```python
+from markitup.converter_utils.utils import read_files_to_bytestreams
+from markitup import MarkItUp, Config
+
+fs = read_files_to_bytestreams('packages/markitup/tests/test_files')
+
+miu = MarkItUp(
+    config=Config(
+        modalities=['image', 'audio'],
+        image_use_webp=True
+        )
+    )
+
+result, stream_info = miu.convert(stream=fs[file_name], file_name=file_name)
+
+```
