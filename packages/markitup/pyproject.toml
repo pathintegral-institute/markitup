@@ -34,11 +34,20 @@ dependencies = [
   "pandas",
   "lxml",
   "olefile",
-  "pydub",
+  # "pydub",  <- Removed from here
   "SpeechRecognition",
   "pymupdf>=1.25.5",
   "openpyxl>=3.1.5",
   "xlrd>=2.0.1",
+]
+
+[project.optional-dependencies]
+audio = [
+  "pydub",
+]
+# Optional: You may want to create an 'all' extra that includes all optional dependencies
+all = [
+  "pydub",
 ]
 
 [tool.hatch.version]
