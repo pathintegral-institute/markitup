@@ -1,9 +1,6 @@
 import os
 from io import BytesIO
-from markitup._schemas import StreamInfo
-import magic
 import speech_recognition as sr
-import pydub
 import io
 from typing import BinaryIO
 
@@ -47,6 +44,7 @@ def transcribe_audio(file_stream: BinaryIO, *, magic_type: str = "audio/mpeg") -
 
     match audio_format:
         case 'mp3':
+            import pydub
             audio_segment = pydub.AudioSegment.from_file(
                 file_stream, format=audio_format)
             audio_source = io.BytesIO()

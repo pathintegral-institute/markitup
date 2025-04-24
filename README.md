@@ -30,6 +30,12 @@ pip install git+https://github.com/pathintegral-institute/markitup.git@main#subd
 uv add git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup
 ```
 
+To use audio transciption using `pydub`, install `markitup[audio]`:
+```bash
+uv add "git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup[audio]"
+```
+
+
 ## Usage
 ```python
 from markitup.converter_utils.utils import read_files_to_bytestreams
