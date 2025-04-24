@@ -87,10 +87,11 @@ class DocumentConverterResult:
             # Add the image
             content.append({
                 "type": "image",
-                "image_url": {
-                    "url": f"data:{content_type};base64,{b64_data}"
+                "source": {
+                    "type": "base64",
+                    "data": b64_data,
+                    "media_type": content_type
                 },
-                "alt_text": alt_text
             })
 
             last_end = match.end()
@@ -104,7 +105,6 @@ class DocumentConverterResult:
                     "text": text_chunk
                 })
         if self.audio_stream:
-            print('hello')
             audio_b64 = base64.b64encode(
                 self.audio_stream.read()).decode('utf-8')
             content.append({
