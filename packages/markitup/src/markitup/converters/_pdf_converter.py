@@ -1,6 +1,5 @@
 from typing import BinaryIO, Any
-import io
-import base64
+import pymupdf4llm
 
 from .._base_converter import DocumentConverter, DocumentConverterResult
 from .._schemas import StreamInfo, Config
@@ -15,7 +14,6 @@ class PdfConverter(DocumentConverter):
 
     def __init__(self, config: Config):
         self.config = config
-        self._html_converter = HtmlConverter(config=config)
 
     def convert(
         self,
@@ -26,22 +24,17 @@ class PdfConverter(DocumentConverter):
         # Create a document object from the stream
         doc = fitz.open(stream=file_stream, filetype="pdf")
 
-        # Extract text and images from all pages
-        markdown_content = ""
-
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
-
-            # Get text with the default "text" mode which gives plain text
-            page_text = page.get_text("html")
-            # Add page marker
-            markdown_content += f"\n\n## Page {page_num + 1}\n\n"
-            html_conterted_md = self._html_converter.convert_string(page_text)
-            markdown_content += html_conterted_md.markdown
-            markdown_content += "\n\n"
-        # Close the document to free resources
-        doc.close()
-        return DocumentConverterResult(
-            markdown=markdown_content,
+        md_content = pymupdf4llm.to_markdown(doc, 
+                                        ignore_graphics=True,
+                                        table_strategy='lines',
+                                        extract_words=True,
+                                        embed_images=True,
+                                        page_chunks=True)
+    
+        llm_msgs = DocumentConverterResult(
+            markdown=md_content,
             config=self.config,
-        )
+            # stream_info=stream_info,
+        ).to_llm()
+        
+        to_chunkfy_string = '\n'.join([msg['content'] for msg in llm_msgs if msg['type'] == "text"])
