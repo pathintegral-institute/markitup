@@ -102,6 +102,13 @@ class _CustomMarkdownify(markdownify.MarkdownConverter):
         title_part = ' "%s"' % title.replace('"', r"\"") if title else ""
 
         if "image" in self.config.modalities:
+            # Handle data URIs - remove any literal \n characters
+            if src.startswith("data:"):
+                # Replace literal \n with empty string
+                src = src.replace('\\n', '')
+                # Also remove actual newlines and whitespace
+                src = src.replace('\n', '').replace('\r', '').strip()
+            
             return "![%s](%s%s)" % (alt, src, title_part)
         else:
             return alt
