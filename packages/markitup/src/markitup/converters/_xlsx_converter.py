@@ -11,6 +11,7 @@ class XlsxConverter(DocumentConverter):
     """
 
     def __init__(self, config: Config):
+        super().__init__(config=config)
         self._html_converter = HtmlConverter(config=config)
 
     def convert(

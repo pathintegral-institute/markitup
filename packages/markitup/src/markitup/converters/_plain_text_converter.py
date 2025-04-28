@@ -5,10 +5,7 @@ from .._schemas import StreamInfo, Config
 
 
 class PlainTextConverter(DocumentConverter):
-    """Anything with content type text/plain"""
-    def __init__(self, config: Config):
-        self.config = config
-    
+    """Anything with content type text/plain"""    
     def convert(self, file_stream: BinaryIO, stream_info: StreamInfo, **kwargs: Any) -> DocumentConverterResult:
         content = file_stream.read()
         text_content = str(from_bytes(content).best())

@@ -3,7 +3,7 @@ from IPython.core.display import Markdown
 import pymupdf4llm
 from collections import Counter
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._schemas import StreamInfo, Config, ChunkList, Chunk, MarkdownChunk
+from .._schemas import StreamInfo, Config, MarkdownChunk
 from ._html_converter import HtmlConverter
 import fitz
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -16,9 +16,25 @@ class PdfConverter(DocumentConverter):
     """
     Converts PDFs to Markdown with embedded images.
     """
-
     def __init__(self, config: Config):
-        self.config = config
+        super().__init__(config=config)
+        self._chunker = RecursiveCharacterTextSplitter(
+            separators=[
+                "\n#{1,6} ",  # Headers (H1 through H6)
+                "```\n",      # Code blocks
+                "\n\\*\\*\\*+\n",  # Horizontal lines (*)
+                "\n\n",       # Double new lines
+                "\n",         # New line
+                " ",          # Spaces
+                "",           # Character
+            ],
+            keep_separator=True,
+            is_separator_regex=True,  # Enable regex for complex separators
+        ).from_tiktoken_encoder(
+            model_name=self.config.tiktoken_encoder,
+            chunk_size=self.config.chunk_size,
+            chunk_overlap=0,
+        )
 
     def convert(
         self,
@@ -30,13 +46,12 @@ class PdfConverter(DocumentConverter):
         doc = fitz.open(stream=file_stream, filetype="pdf")
 
         if not self.config.chunk:
-            md_content = pymupdf4llm.to_markdown(   
+            md_content = pymupdf4llm.to_markdown(
                 doc,
                 ignore_graphics=True,
                 table_strategy='lines',
-                extract_words=True,
                 embed_images=bool('image' in self.config.modalities),
-                page_chunks=True)
+                page_chunks=False)
             return DocumentConverterResult(
                 markdown=md_content,
                 config=self.config,
@@ -50,29 +65,13 @@ class PdfConverter(DocumentConverter):
             extract_words=True,
             embed_images=False,
             page_chunks=True)
-        rct_splitter = RecursiveCharacterTextSplitter(
-                separators=[
-                    "\n#{1,6} ",  # Headers (H1 through H6)
-                    "```\n",      # Code blocks
-                    "\n\\*\\*\\*+\n",  # Horizontal lines (*)
-                    "\n\n",       # Double new lines
-                    "\n",         # New line
-                    " ",          # Spaces
-                    "",           # Character
-                ],
-                keep_separator=True,
-                is_separator_regex=True,  # Enable regex for complex separators
-            ).from_tiktoken_encoder(
-                model_name=self.config.tiktoken_encoder,
-                chunk_size=self.config.chunk_size,
-                chunk_overlap=0,
-            )
+        
         final_chunk_list = []
         for idx, pdf_dict in enumerate(pdf_dict_list):
             md_content = pdf_dict['text']
             words_tuple_list = pdf_dict['words']
 
-            text_chunk_list = rct_splitter.split_text(md_content)
+            text_chunk_list = self._chunker.split_text(md_content)
             categorical_list = create_categorical_mapping(text_chunk_list, words_tuple_list= words_tuple_list)
             block_categories = determine_block_categories(words_tuple_list, categorical_list)
             text_tuple_list = []
@@ -236,10 +235,10 @@ def determine_block_categories(words_tuple_list: List[Tuple[float, float, float,
     return block_categories
 
 
-def sort_chunks_based_on_bbox_id(unsorted_chunks: List[Chunk], offset: int = 0) -> List[Chunk]:
+def sort_chunks_based_on_bbox_id(unsorted_chunks: List[MarkdownChunk], offset: int = 0) -> List[MarkdownChunk]:
     # First, sort chunks based on their minimum bbox_id
     # For chunks without bbox_id_list, we'll place them at the end
-    def get_min_bbox_id(chunk: Chunk) -> int:
+    def get_min_bbox_id(chunk: MarkdownChunk) -> int:
         if chunk.bbox_id_list and len(chunk.bbox_id_list) > 0:
             return min(chunk.bbox_id_list)
         return float('inf')  # Place chunks without bbox_id_list at the end

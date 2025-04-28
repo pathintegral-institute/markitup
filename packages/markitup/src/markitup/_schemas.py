@@ -22,6 +22,7 @@ class Config:
     # CHUNK_OVERLAP = 0 # Warning, the current pdf chunking localization depends on chunk_overlap == 0
     tiktoken_encoder: str = TIKTOKEN_ENCODER
     image_use_webp: bool = True  # TODO: support files contains images
+    image_max_width_or_height: int = 768
 
 
 @dataclass
