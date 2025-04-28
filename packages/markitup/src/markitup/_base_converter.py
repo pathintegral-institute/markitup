@@ -2,7 +2,7 @@ import os
 import tempfile
 from warnings import warn
 from typing import Any, Union, BinaryIO, Optional, List, Dict
-from ._schemas import StreamInfo, Config
+from ._schemas import StreamInfo, Config, MarkdownChunk
 import re
 import base64
 from PIL import Image
@@ -15,6 +15,7 @@ class DocumentConverterResult:
     def __init__(
         self,
         markdown: str = "",
+        markdown_chunk_list: Optional[List[MarkdownChunk]] = None,
         config: Optional[Config] = None,
         *,
         title: Optional[str] = None,
@@ -35,6 +36,7 @@ class DocumentConverterResult:
         - stream_info: Optional stream information.
         """
         self.markdown = markdown
+        self.markdown_chunk_list = markdown_chunk_list
         self.audio_stream = audio_stream
         self.title = title
         self.stream_info = stream_info
