@@ -11,9 +11,6 @@ class CsvConverter(DocumentConverter):
     """
     Converts CSV files to Markdown tables.
     """
-    def __init__(self, config: Config):
-        self.config = config
-
     def convert(
         self,
         file_stream: BinaryIO,

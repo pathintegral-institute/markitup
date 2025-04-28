@@ -9,9 +9,6 @@ class ImageConverter(DocumentConverter):
     Converts image files to markdown with embedded base64 image.
     """
 
-    def __init__(self, config: Config):
-        self.config = config
-
     def convert(
         self,
         file_stream: BinaryIO,

@@ -19,10 +19,6 @@ ACCEPTED_FILE_CATEGORY = [
 
 class HtmlConverter(DocumentConverter):
     """Anything with content type text/html"""
-
-    def __init__(self, config: Config):
-        self.config = config
-
     def convert(
         self,
         file_stream: BinaryIO,

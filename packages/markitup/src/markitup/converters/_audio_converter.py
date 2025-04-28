@@ -11,10 +11,6 @@ class AudioConverter(DocumentConverter):
     """
     Converts audio files to markdown via extraction of metadata (if `exiftool` is installed), and speech transcription (if `speech_recognition` is installed).
     """
-
-    def __init__(self, config: Config):
-        self.config = config
-
     def convert(
         self,
         file_stream: BinaryIO,
