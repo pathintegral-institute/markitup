@@ -53,7 +53,7 @@ class DocumentConverterResult:
         """
 
         # Pattern to match markdown image syntax with base64 data
-        pattern = r'!\[(.*?)\]\(data:(.*?);base64,(.*?)\)'
+        pattern = r'!\[(.*?)\]\(data:(.*?);base64,(.*?)\s*\)'
 
         content = []
         last_end = 0
