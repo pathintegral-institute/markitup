@@ -53,5 +53,4 @@ class Chunk:
 
     page_id: Optional[int]  # The 0-based page id of the chunk, currently exclusive for pdf
     
-    bbox_id_list: Optional[List[int]]  # The 0-based bounding box id of the chunk, currently exclusive for pdf
     bbox_list: Optional[List[Tuple[float, float, float, float]]]  # The bounding box of the chunk, currently exclusive for pdf
