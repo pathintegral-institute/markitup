@@ -153,7 +153,7 @@ def main():
         or charset_hint is not None
     ):
         stream_info = StreamInfo(
-            extension=extension_hint, mimetype=mime_type_hint, charset=charset_hint
+            magic_type=mime_type_hint, category=None
         )
 
     if args.list_plugins:

@@ -80,7 +80,7 @@ class PdfConverter(DocumentConverter):
                 if 'lines' in block_tuple:
                     text_tuple_list.append(block_tuple)
             # TEXT CHUNK
-            text_chunk_list = [MarkdownChunk('text', chunk_str, 0, idx) for chunk_str in text_chunk_list]
+            text_chunk_list = [MarkdownChunk(chunk_modality='text', content=chunk_str, chunk_id=0, page_id=idx) for chunk_str in text_chunk_list]
             for key in block_categories:
                 chunk_id = block_categories[key]
                 selected_tuple = text_tuple_list[key]
@@ -137,7 +137,7 @@ def image_dict_to_chunk(image_dict: Dict[str, Any], page_id: int) -> MarkdownChu
             chunk_id=0,
             page_id=page_id,
             bbox_id_list=[int(image_dict['number'])],
-            bbox_list=[(image_dict['bbox'])]
+            bbox_list=[image_dict['bbox']]
         )
     except Exception as e:
         logger.error(f"Failed to convert image dictionary to chunk: {e}")
