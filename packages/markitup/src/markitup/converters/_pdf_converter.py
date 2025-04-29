@@ -3,7 +3,7 @@ from IPython.core.display import Markdown
 import pymupdf4llm
 from collections import Counter
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._schemas import StreamInfo, Config, MarkdownChunk
+from .._schemas import StreamInfo, Config, MarkdownChunk, BBox
 from ._html_converter import HtmlConverter
 import fitz
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -82,10 +82,14 @@ class PdfConverter(DocumentConverter):
             # TEXT CHUNK
             text_chunk_list = [MarkdownChunk(chunk_modality='text', content=chunk_str, chunk_id=0, page_id=idx) for chunk_str in text_chunk_list]
             for key in block_categories:
-                chunk_id = block_categories[key]
-                selected_tuple = text_tuple_list[key]
-                text_chunk_list[chunk_id].bbox_id_list.append(int(selected_tuple['number']))
-                text_chunk_list[chunk_id].bbox_list.append(selected_tuple['bbox'])
+                try:
+                    chunk_id = block_categories[key]
+                    selected_tuple = text_tuple_list[key]
+                    text_chunk_list[chunk_id].bbox_id_list.append(int(selected_tuple['number']))
+                    text_chunk_list[chunk_id].bbox_list.append(BBox(x0=selected_tuple['bbox'][0], y0=selected_tuple['bbox'][1], x1=selected_tuple['bbox'][2], y1=selected_tuple['bbox'][3]))
+                except Exception as e:
+                    logger.warning(f"Failed to process text chunk: {e}")
+                    continue
             
             # IMAGE CHUNK
             image_chunk_list = []
@@ -137,10 +141,10 @@ def image_dict_to_chunk(image_dict: Dict[str, Any], page_id: int) -> MarkdownChu
             chunk_id=0,
             page_id=page_id,
             bbox_id_list=[int(image_dict['number'])],
-            bbox_list=[image_dict['bbox']]
+            bbox_list=[BBox(x0=image_dict['bbox'][0], y0=image_dict['bbox'][1], x1=image_dict['bbox'][2], y1=image_dict['bbox'][3])]
         )
     except Exception as e:
-        logger.error(f"Failed to convert image dictionary to chunk: {e}")
+        logger.warning(f"Failed to convert image dictionary to chunk: {e}")
         return None
 
 

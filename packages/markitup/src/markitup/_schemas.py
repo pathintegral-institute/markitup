@@ -25,12 +25,27 @@ class Config(BaseModel):
     image_max_width_or_height: int = 768
 
 
+class BBox(BaseModel):
+    """
+    A simple bounding box representation with coordinates.
+    
+    Coordinates are in the format (x0, y0, x1, y1) where:
+    - (x0, y0) is the top-left corner
+    - (x1, y1) is the bottom-right corner
+    """
+    x0: float
+    y0: float
+    x1: float
+    y1: float
+    
+
 class MarkdownChunk(BaseModel):
     chunk_modality: Literal["text", "image"]
-    content: str  # The content of the chunk ONLY contains one type of modality
 
     # LOCATION INFO
     chunk_id: int  # The global chunk id of the chunk
+
+    content: str  # The content of the chunk ONLY contains one type of modality
 
     page_id: Optional[int] = None  # The 0-based page id of the chunk, currently exclusive for pdf
 
@@ -38,18 +53,19 @@ class MarkdownChunk(BaseModel):
         default_factory=list
     )  # The 0-based bounding box id of the chunk, currently exclusive for pdf
 
-    bbox_list: Optional[List[Tuple[float, float, float, float]]] = Field(
+    bbox_list: Optional[List[BBox]] = Field(
         default_factory=list
     )  # The bounding box of the chunk, currently exclusive for pdf
 
 
 class Chunk(BaseModel):
     chunk_modality: Literal["text", "image", "audio"]
-    content: Dict[str, Any]  # The content of the chunk ONLY contains one type of modality
 
     # LOCATION INFO
     chunk_id: int  # The global chunk id of the chunk @rong: do we need a local chunk id here?
 
+    content: Dict[str, Any]  # The content of the chunk ONLY contains one type of modality
+
     page_id: Optional[int] = None  # The 0-based page id of the chunk, currently exclusive for pdf
     
-    bbox_list: Optional[List[Tuple[float, float, float, float]]] = None  # The bounding box of the chunk, currently exclusive for pdf
+    bbox_list: Optional[List[BBox]] = None  # The bounding box of the chunk, currently exclusive for pdf
