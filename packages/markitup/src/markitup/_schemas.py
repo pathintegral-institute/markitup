@@ -69,6 +69,10 @@ class Chunk(BaseModel):
     # The content of the chunk ONLY contains one type of modality
     content: Dict[str, Any]
 
+    dense_embedding: Optional[Dict[str, Any]] = None # dict['embedding_model'] = "eg 1024 dim embedding"
+
+    sparse_embedding: Optional[Dict[str, Any]] = None # dict['embedding_model'] = "sparse embedding"
+
     # The 0-based page id of the chunk, currently exclusive for pdf
     page_id: Optional[int] = None
 

@@ -111,6 +111,7 @@ class DocumentConverterResult:
                 )
                 chunk_id += 1
                 chunks.append(image_chunk)
+        return chunks
 
     def _process_chunked_content(self) -> List[Chunk]:
         """
@@ -140,29 +141,40 @@ class DocumentConverterResult:
                 chunks.append(text_chunk)
 
             elif markdown_chunk.chunk_modality == "image":
-                # Pattern to match markdown image syntax with base64 data
-                pattern = r'!\[(.*?)\]\(data:(.*?);base64,(.*?)\s*\)'
-
-                # Process image chunk
-                match = re.search(pattern, markdown_chunk.content)
-                if match:
-                    alt_text, content_type, b64_data = match.groups()
-
-                    # Decode base64 data
-                    img_data = base64.b64decode(b64_data)
-
-                    # Process image and get formatted result
-                    image_dict = self._process_image(img_data, content_type)
-
-                    # Create Chunk object for image
+                # For other than pdf, the image_dict here is already present, no need to match
+                if isinstance(markdown_chunk.content, dict):
                     image_chunk = Chunk(
                         chunk_modality="image",
                         chunk_id=markdown_chunk.chunk_id,
-                        content=image_dict,
+                        content=markdown_chunk.content,
                         page_id=markdown_chunk.page_id,
                         bbox_list=markdown_chunk.bbox_list
                     )
                     chunks.append(image_chunk)
+                else:
+                    # Pattern to match markdown image syntax with base64 data
+                    pattern = r'!\[(.*?)\]\(data:(.*?);base64,(.*?)\s*\)'
+
+                    # Process image chunk
+                    match = re.search(pattern, markdown_chunk.content)
+                    if match:
+                        alt_text, content_type, b64_data = match.groups()
+
+                        # Decode base64 data
+                        img_data = base64.b64decode(b64_data)
+
+                        # Process image and get formatted result
+                        image_dict = self._process_image(img_data, content_type)
+
+                        # Create Chunk object for image
+                        image_chunk = Chunk(
+                            chunk_modality="image",
+                            chunk_id=markdown_chunk.chunk_id,
+                            content=image_dict,
+                            page_id=markdown_chunk.page_id,
+                            bbox_list=markdown_chunk.bbox_list
+                        )
+                        chunks.append(image_chunk)
 
         return chunks
 
