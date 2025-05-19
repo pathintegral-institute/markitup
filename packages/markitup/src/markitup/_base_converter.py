@@ -277,13 +277,11 @@ class DocumentConverterResult:
         # Convert to base64
         b64_data = base64.b64encode(processed_data).decode('utf-8')
 
-        # Construct the result dictionary
+        # Construct the result dictionary in OpenAI format
         result = {
-            "type": "image",
-            "source": {
-                "type": "base64",
-                "data": b64_data,
-                "media_type": content_type
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:{content_type};base64,{b64_data}"
             }
         }
 
