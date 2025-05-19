@@ -73,6 +73,8 @@ class Chunk(BaseModel):
 
     sparse_embedding: Optional[Dict[str, Any]] = None # dict['embedding_model'] = "sparse embedding"
 
+    english_description: Optional[str] = None
+    
     # The 0-based page id of the chunk, currently exclusive for pdf
     page_id: Optional[int] = None
 
