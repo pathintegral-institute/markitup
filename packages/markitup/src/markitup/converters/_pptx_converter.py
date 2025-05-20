@@ -114,18 +114,18 @@ class PptxConverter(DocumentConverter):
             if slide_text:
                 chunk_list.append(MarkdownChunk(
                     chunk_modality='text',
-                    content=slide_text,
                     chunk_id=len(chunk_list),
-                    page_id=slide_num - 1
+                    page_id=slide_num - 1,
+                    content=slide_text
                 ))
 
             # Create image chunks for the slide
             for image_md in slide_images:
                 chunk_list.append(MarkdownChunk(
                     chunk_modality='image',
-                    content=image_md,
                     chunk_id=len(chunk_list),
-                    page_id=slide_num - 1
+                    page_id=slide_num - 1,
+                    content=image_md
                 ))
 
             # Add slide content to full markdown

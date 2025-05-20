@@ -44,11 +44,11 @@ class MarkdownChunk(BaseModel):
 
     # LOCATION INFO
     chunk_id: int  # The global chunk id of the chunk
-
-    content: str  # The content of the chunk ONLY contains one type of modality
-
+    
     # The 0-based page id of the chunk, currently exclusive for pdf
     page_id: Optional[int] = None
+
+    content: str  # The content of the chunk ONLY contains one type of modality
 
     bbox_id_list: Optional[List[int]] = Field(
         default_factory=list
@@ -65,18 +65,12 @@ class Chunk(BaseModel):
 
     # LOCATION INFO
     chunk_id: int  # The global chunk id of the chunk @rong: do we need a local chunk id here?
-
-    # The content of the chunk ONLY contains one type of modality
-    content: Dict[str, Any]
-
-    dense_embedding: Optional[Dict[str, Any]] = None # dict['embedding_model'] = "eg 1024 dim embedding"
-
-    sparse_embedding: Optional[Dict[str, Any]] = None # dict['embedding_model'] = "sparse embedding"
-
-    english_description: Optional[str] = None
     
     # The 0-based page id of the chunk, currently exclusive for pdf
     page_id: Optional[int] = None
+
+    # The content of the chunk ONLY contains one type of modality
+    content: Dict[str, Any]
 
     # The bounding box of the chunk, currently exclusive for pdf
     bbox_list: Optional[List[BBox]] = None

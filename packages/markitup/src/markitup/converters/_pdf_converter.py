@@ -80,7 +80,7 @@ class PdfConverter(DocumentConverter):
                 if 'lines' in block_tuple:
                     text_tuple_list.append(block_tuple)
             # TEXT CHUNK
-            text_chunk_list = [MarkdownChunk(chunk_modality='text', content=chunk_str, chunk_id=0, page_id=idx) for chunk_str in text_chunk_list]
+            text_chunk_list = [MarkdownChunk(chunk_modality='text', chunk_id=0, page_id=idx, content=chunk_str) for chunk_str in text_chunk_list]
             for key in block_categories:
                 try:
                     chunk_id = block_categories[key]
@@ -137,9 +137,9 @@ def image_dict_to_chunk(image_dict: Dict[str, Any], page_id: int) -> MarkdownChu
     try:
         return MarkdownChunk(
             chunk_modality='image',
-            content=markdown_content,
             chunk_id=0,
             page_id=page_id,
+            content=markdown_content,
             bbox_id_list=[int(image_dict['number'])],
             bbox_list=[BBox(x0=image_dict['bbox'][0], y0=image_dict['bbox'][1], x1=image_dict['bbox'][2], y1=image_dict['bbox'][3])]
         )
