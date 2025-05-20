@@ -5,12 +5,12 @@ import io
 import re
 import html
 
-from typing import BinaryIO, Any
+from typing import BinaryIO, Any, List, Dict
 from operator import attrgetter
 
 from ._html_converter import HtmlConverter
 from .._base_converter import DocumentConverter, DocumentConverterResult
-from .._schemas import StreamInfo, Config
+from .._schemas import StreamInfo, Config, MarkdownChunk
 import pptx
 
 
@@ -40,28 +40,24 @@ class PptxConverter(DocumentConverter):
         # Perform the conversion
         presentation = pptx.Presentation(file_stream)
         md_content = ""
+        chunk_list = []
         slide_num = 0
+
         for slide in presentation.slides:
             slide_num += 1
-
-            md_content += f"\n\n<!-- Slide number: {slide_num} -->\n"
-
-            title = slide.shapes.title
+            slide_text = ""
+            slide_images = []
 
             def get_shape_content(shape, **kwargs):
-                nonlocal md_content
+                nonlocal slide_text
                 # Pictures
                 if self._is_picture(shape):
                     # https://github.com/scanny/python-pptx/pull/512#issuecomment-1713100069
-
                     alt_text = ""
 
-                    # Also grab any description embedded in the deck
                     try:
-                        alt_text = shape._element._nvXxPr.cNvPr.attrib.get(
-                            "descr", "")
+                        alt_text = shape._element._nvXxPr.cNvPr.attrib.get("descr", "")
                     except Exception:
-                        # Unable to get alt text
                         pass
 
                     # Prepare the alt, escaping any special characters
@@ -69,54 +65,81 @@ class PptxConverter(DocumentConverter):
                     alt_text = re.sub(r"[\r\n\[\]]", " ", alt_text)
                     alt_text = re.sub(r"\s+", " ", alt_text).strip()
 
-                    # If keep_data_uris is True, use base64 encoding for images
+                    # Create image chunk
                     if 'image' in self.config.modalities:
                         blob = shape.image.blob
                         content_type = shape.image.content_type or "image/png"
                         b64_string = base64.b64encode(blob).decode("utf-8")
-                        md_content += f"\n![{alt_text}](data:{content_type};base64,{b64_string})\n"
+                        image_md = f"\n![{alt_text}](data:{content_type};base64,{b64_string})\n"
+                        slide_images.append(image_md)
                     else:
                         filename = re.sub(r"\W", "", shape.name) + ".jpg"
-                        md_content += "\n![" + alt_text + \
-                            "](" + filename + ")\n"
+                        image_md = f"\n![{alt_text}]({filename})\n"
+                        slide_images.append(image_md)
 
                 # Tables
                 if self._is_table(shape):
-                    md_content += self._convert_table_to_markdown(
-                        shape.table, **kwargs)
+                    slide_text += self._convert_table_to_markdown(shape.table, **kwargs)
 
                 # Charts
                 if shape.has_chart:
-                    md_content += self._convert_chart_to_markdown(shape.chart)
+                    slide_text += self._convert_chart_to_markdown(shape.chart)
 
                 # Text areas
                 elif shape.has_text_frame:
                     if shape == title:
-                        md_content += "# " + shape.text.lstrip() + "\n"
+                        slide_text += "# " + shape.text.lstrip() + "\n"
                     else:
-                        md_content += shape.text + "\n"
+                        slide_text += shape.text + "\n"
 
                 # Group Shapes
                 if shape.shape_type == pptx.enum.shapes.MSO_SHAPE_TYPE.GROUP:
-                    sorted_shapes = sorted(
-                        shape.shapes, key=attrgetter("top", "left"))
+                    sorted_shapes = sorted(shape.shapes, key=attrgetter("top", "left"))
                     for subshape in sorted_shapes:
                         get_shape_content(subshape, **kwargs)
 
+            title = slide.shapes.title
             sorted_shapes = sorted(slide.shapes, key=attrgetter("top", "left"))
             for shape in sorted_shapes:
                 get_shape_content(shape, **kwargs)
 
-            md_content = md_content.strip()
-
+            # Add notes if present
             if slide.has_notes_slide:
-                md_content += "\n\n### Notes:\n"
                 notes_frame = slide.notes_slide.notes_text_frame
                 if notes_frame is not None:
-                    md_content += notes_frame.text
-                md_content = md_content.strip()
+                    slide_text += "\n\n### Notes:\n" + notes_frame.text
 
-        return DocumentConverterResult(markdown=md_content.strip(), config=self.config)
+            # Create text chunk for the slide if there's any text content
+            slide_text = slide_text.strip()
+            if slide_text:
+                chunk_list.append(MarkdownChunk(
+                    chunk_modality='text',
+                    content=slide_text,
+                    chunk_id=len(chunk_list),
+                    page_id=slide_num - 1
+                ))
+
+            # Create image chunks for the slide
+            for image_md in slide_images:
+                chunk_list.append(MarkdownChunk(
+                    chunk_modality='image',
+                    content=image_md,
+                    chunk_id=len(chunk_list),
+                    page_id=slide_num - 1
+                ))
+
+            # Add slide content to full markdown
+            md_content += f"\n\n<!-- Slide number: {slide_num} -->\n"
+            md_content += slide_text
+            md_content += "\n".join(slide_images)
+            md_content = md_content.strip()
+
+        return DocumentConverterResult(
+            markdown=md_content.strip(),
+            markdown_chunk_list=chunk_list if self.config.chunk else None,
+            config=self.config,
+            stream_info=stream_info
+        )
 
     def _is_picture(self, shape):
         if shape.shape_type == pptx.enum.shapes.MSO_SHAPE_TYPE.PICTURE:
