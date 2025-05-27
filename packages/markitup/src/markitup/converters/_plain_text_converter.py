@@ -10,4 +10,4 @@ class PlainTextConverter(DocumentConverter):
         content = file_stream.read()
         text_content = str(from_bytes(content).best())
         
-        return DocumentConverterResult(markdown=text_content)
+        return DocumentConverterResult(markdown=text_content, config=self.config)

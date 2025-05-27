@@ -32,7 +32,7 @@ class XlsxConverter(DocumentConverter):
                 + "\n\n"
             )
 
-        return DocumentConverterResult(markdown=md_content.strip())
+        return DocumentConverterResult(markdown=md_content.strip(), config=self.config)
 
 
 class XlsConverter(DocumentConverter):
@@ -62,4 +62,4 @@ class XlsConverter(DocumentConverter):
                 + "\n\n"
             )
 
-        return DocumentConverterResult(markdown=md_content.strip())
+        return DocumentConverterResult(markdown=md_content.strip(), config=self.config)

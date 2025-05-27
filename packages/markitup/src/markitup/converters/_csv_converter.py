@@ -25,7 +25,7 @@ class CsvConverter(DocumentConverter):
         rows = list(reader)
 
         if not rows:
-            return DocumentConverterResult(markdown="")
+            return DocumentConverterResult(markdown="", config=self.config)
 
         # Create markdown table
         markdown_table = []

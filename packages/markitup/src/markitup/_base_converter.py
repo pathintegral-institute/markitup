@@ -58,7 +58,7 @@ class DocumentConverterResult:
                                 (text and images) in their original order.
         """
         # Check if chunking is enabled and markdown_chunk_list is available
-        if self.config.chunk:
+        if self.config and self.config.chunk:
             if not self.markdown_chunk_list:
                 self.markdown_chunk_list = self._gen_markdown_chunk_list_from_md_content()
             return self._process_chunked_content()
