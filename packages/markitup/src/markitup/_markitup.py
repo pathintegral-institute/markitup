@@ -1,6 +1,13 @@
 from typing import Dict, Optional, BinaryIO
 import filetype
 import mimetypes
+
+# Try to import python-magic for more accurate file type detection
+try:
+    import magic
+except ImportError:
+    magic = None
+
 from ._schemas import StreamInfo, Config
 
 from .converters import (
@@ -80,14 +87,16 @@ class MarkItUp:
         # Get file content for analysis
         file_content = byte_stream.read()
 
-        # Use filetype.py to determine file type based on content
-        kind = filetype.guess(file_content)
-        if kind is not None:
-            magic_type = kind.mime
+        # Use python-magic for more accurate detection if available
+        if magic:
+            try:
+                magic_type = magic.from_buffer(file_content, mime=True)
+            except Exception:
+                # Fallback to filetype if magic fails
+                magic_type = self._get_filetype_mime(file_content, filename)
         else:
-            # Fallback to filename-based detection when filetype can't determine the type
-            guessed_type, _ = mimetypes.guess_type(filename)
-            magic_type = guessed_type if guessed_type else "application/octet-stream"
+            # Use filetype.py when python-magic is not available
+            magic_type = self._get_filetype_mime(file_content, filename)
 
         # Determine file category based on magic_type
         if magic_type.startswith("image/"):
@@ -133,3 +142,14 @@ class MarkItUp:
 
         byte_stream.seek(0)
         return StreamInfo(magic_type=magic_type, category=category)
+
+    def _get_filetype_mime(self, file_content: bytes, filename: str) -> str:
+        """Get MIME type using filetype library with filename fallback."""
+        # Use filetype.py to determine file type based on content
+        kind = filetype.guess(file_content)
+        if kind is not None:
+            return kind.mime
+        else:
+            # Fallback to filename-based detection
+            guessed_type, _ = mimetypes.guess_type(filename)
+            return guessed_type if guessed_type else "application/octet-stream"
