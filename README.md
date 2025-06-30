@@ -30,9 +30,21 @@ pip install git+https://github.com/pathintegral-institute/markitup.git@main#subd
 uv add git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup
 ```
 
-To use audio transciption using `pydub`, install `markitup[audio]`:
+### Optional Dependencies
+
+To use audio transcription using `pydub`, install `markitup[audio]`:
 ```bash
 uv add "git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup[audio]"
+```
+
+To use enhanced file type detection with `python-magic`, install `markitup[magic]`:
+```bash
+uv add "git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup[magic]"
+```
+
+To install all optional dependencies, use `markitup[all]`:
+```bash
+uv add "git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup[all]"
 ```
 
 
