@@ -1,10 +1,8 @@
-import os
 import unittest
-from pathlib import Path
 from markitup import MarkItUp, Config
 from markitup.converter_utils.utils import read_files_to_bytestreams
 
-fs = read_files_to_bytestreams('packages/markitup/tests/test_files')
+fs = read_files_to_bytestreams('tests/test_files')
 
 
 class TestMarkItUp(unittest.TestCase):

@@ -53,3 +53,31 @@ miu = MarkItUp(
 result, stream_info = miu.convert(stream=fs[file_name], file_name=file_name)
 
 ```
+
+## Development
+
+### Running Tests
+
+To run the test suite, first install [Hatch](https://hatch.pypa.io/) (which provides better test isolation):
+
+```bash
+uv tool install hatch
+```
+
+Then navigate to the package directory and run the tests:
+
+```bash
+cd packages/markitup
+hatch test
+```
+
+Or for verbose output:
+
+```bash
+cd packages/markitup
+hatch test -- -v
+```
+
+The test suite includes tests for all supported file formats and converter functionality. Hatch provides better isolation from conflicting globally installed packages than other tools.
+
+```

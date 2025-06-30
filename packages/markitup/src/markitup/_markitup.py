@@ -1,8 +1,5 @@
-from typing import Any, List, Dict, Optional, Union, BinaryIO
-from pathlib import Path
-from urllib.parse import urlparse
-from warnings import warn
-import magic
+from typing import Dict, Optional, BinaryIO
+import filetype
 import mimetypes
 from ._schemas import StreamInfo, Config
 
@@ -83,12 +80,14 @@ class MarkItUp:
         # Get file content for analysis
         file_content = byte_stream.read()
 
-        # Use python-magic to determine file type based on content
-        magic_type = magic.from_buffer(file_content, mime=True)
-        if magic_type == "application/octet-stream":
+        # Use filetype.py to determine file type based on content
+        kind = filetype.guess(file_content)
+        if kind is not None:
+            magic_type = kind.mime
+        else:
+            # Fallback to filename-based detection when filetype can't determine the type
             guessed_type, _ = mimetypes.guess_type(filename)
-            if guessed_type:
-                magic_type = guessed_type
+            magic_type = guessed_type if guessed_type else "application/octet-stream"
 
         # Determine file category based on magic_type
         if magic_type.startswith("image/"):
@@ -102,15 +101,21 @@ class MarkItUp:
             category = "video"
         elif magic_type.startswith("application/vnd.ms-excel"):
             category = 'xls'
-        elif magic_type.startswith("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
+        elif magic_type.startswith(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ):
             category = "xlsx"
         elif magic_type.startswith("application/vnd.ms-powerpoint"):
             category = 'ppt'
-        elif magic_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+        elif magic_type == (
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+        ):
             category = "pptx"
         elif magic_type.startswith("application/msword"):
             category = 'doc'
-        elif magic_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        elif magic_type == (
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        ):
             category = "docx"
         elif magic_type == "application/pdf":
             category = "pdf"

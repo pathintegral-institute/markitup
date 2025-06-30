@@ -28,7 +28,7 @@ dependencies = [
   "markdownify",
   "magika~=0.6.1",
   "charset-normalizer",
-  "python-magic>=0.4.27",
+  "filetype>=1.2.0",
   "python-pptx",
   "mammoth",
   "pandas",
