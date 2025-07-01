@@ -92,7 +92,7 @@ class MarkItUp:
             try:
                 magic_type = magic.from_buffer(file_content, mime=True)
             except Exception:
-                # Fallback to filetype if magic fails
+                # Fallback to filetype.py if python-magic fails
                 magic_type = self._get_filetype_mime(file_content, filename)
         else:
             # Use filetype.py when python-magic is not available
@@ -110,21 +110,15 @@ class MarkItUp:
             category = "video"
         elif magic_type.startswith("application/vnd.ms-excel"):
             category = 'xls'
-        elif magic_type.startswith(
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        ):
+        elif magic_type.startswith("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
             category = "xlsx"
         elif magic_type.startswith("application/vnd.ms-powerpoint"):
             category = 'ppt'
-        elif magic_type == (
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
-        ):
+        elif magic_type == "application/vnd.openxmlformats-officedocument.presentationml.presentation":
             category = "pptx"
         elif magic_type.startswith("application/msword"):
             category = 'doc'
-        elif magic_type == (
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        ):
+        elif magic_type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
             category = "docx"
         elif magic_type == "application/pdf":
             category = "pdf"
@@ -149,7 +143,11 @@ class MarkItUp:
         kind = filetype.guess(file_content)
         if kind is not None:
             return kind.mime
-        else:
-            # Fallback to filename-based detection
-            guessed_type, _ = mimetypes.guess_type(filename)
-            return guessed_type if guessed_type else "application/octet-stream"
+        
+        # Fallback to filename-based detection
+        guessed_type, _ = mimetypes.guess_type(filename)
+        if guessed_type:
+            return guessed_type
+        
+        # Final fallback
+        return "application/octet-stream"
