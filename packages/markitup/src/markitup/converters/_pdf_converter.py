@@ -1,5 +1,4 @@
 from typing import BinaryIO, Any, Tuple, List, Dict
-from IPython.core.display import Markdown
 import pymupdf4llm
 from collections import Counter
 from .._base_converter import DocumentConverter, DocumentConverterResult

@@ -26,9 +26,8 @@ dependencies = [
   "beautifulsoup4",
   "requests",
   "markdownify",
-  "magika~=0.6.1",
   "charset-normalizer",
-  "python-magic>=0.4.27",
+  "filetype>=1.2.0",
   "python-pptx",
   "mammoth",
   "pandas",
@@ -49,9 +48,13 @@ dependencies = [
 audio = [
   "pydub",
 ]
+magic = [
+  "python-magic>=0.4.27",
+]
 # Optional: You may want to create an 'all' extra that includes all optional dependencies
 all = [
   "pydub",
+  "python-magic>=0.4.27",
 ]
 
 [tool.hatch.version]

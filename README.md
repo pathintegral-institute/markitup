@@ -30,9 +30,21 @@ pip install git+https://github.com/pathintegral-institute/markitup.git@main#subd
 uv add git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup
 ```
 
-To use audio transciption using `pydub`, install `markitup[audio]`:
+### Optional Dependencies
+
+To use audio transcription using `pydub`, install `markitup[audio]`:
 ```bash
 uv add "git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup[audio]"
+```
+
+To use enhanced file type detection with `python-magic`, install `markitup[magic]`:
+```bash
+uv add "git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup[magic]"
+```
+
+To install all optional dependencies, use `markitup[all]`:
+```bash
+uv add "git+https://github.com/pathintegral-institute/markitup.git@main#subdirectory=packages/markitup[all]"
 ```
 
 
@@ -51,5 +63,33 @@ miu = MarkItUp(
     )
 
 result, stream_info = miu.convert(stream=fs[file_name], file_name=file_name)
+
+```
+
+## Development
+
+### Running Tests
+
+To run the test suite, first install [Hatch](https://hatch.pypa.io/) (which provides better test isolation):
+
+```bash
+uv tool install hatch
+```
+
+Then navigate to the package directory and run the tests:
+
+```bash
+cd packages/markitup
+hatch test
+```
+
+Or for verbose output:
+
+```bash
+cd packages/markitup
+hatch test -- -v
+```
+
+The test suite includes tests for all supported file formats and converter functionality. Hatch provides better isolation from conflicting globally installed packages than other tools.
 
 ```
