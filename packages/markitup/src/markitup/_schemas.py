@@ -23,6 +23,7 @@ class Config(BaseModel):
     tiktoken_encoder: str = TIKTOKEN_ENCODER
     image_use_webp: bool = True  # TODO: support files contains images
     image_max_width_or_height: int = 768
+    ignore_unsupported_image: bool = False
 
 
 class BBox(BaseModel):

@@ -164,17 +164,32 @@ class DocumentConverterResult:
                         img_data = base64.b64decode(b64_data)
 
                         # Process image and get formatted result
-                        image_dict = self._process_image(img_data, content_type)
-
-                        # Create Chunk object for image
-                        image_chunk = Chunk(
-                            chunk_modality="image",
-                            chunk_id=markdown_chunk.chunk_id,
-                            content=image_dict,
-                            page_id=markdown_chunk.page_id,
-                            bbox_list=markdown_chunk.bbox_list
-                        )
-                        chunks.append(image_chunk)
+                        try:
+                            image_dict = self._process_image(img_data, content_type)
+                        except Exception as e:
+                            if not self.config.ignore_unsupported_image:
+                                raise
+                            image_dict = {
+                                'type': 'text',
+                                'text': f'unsupported {content_type!r} image {alt_text!r}: {e}'
+                            }
+                            chunks.append(Chunk(
+                                chunk_modality="text",
+                                chunk_id=markdown_chunk.chunk_id,
+                                content=image_dict,
+                                page_id=markdown_chunk.page_id,
+                                bbox_list=markdown_chunk.bbox_list
+                            ))
+                        else:
+                            # Create Chunk object for image
+                            image_chunk = Chunk(
+                                chunk_modality="image",
+                                chunk_id=markdown_chunk.chunk_id,
+                                content=image_dict,
+                                page_id=markdown_chunk.page_id,
+                                bbox_list=markdown_chunk.bbox_list
+                            )
+                            chunks.append(image_chunk)
 
         return chunks
 
@@ -209,8 +224,16 @@ class DocumentConverterResult:
             img_data = base64.b64decode(b64_data)
 
             # Process image and get formatted result
-            image_dict = self._process_image(img_data, content_type)
-            content.append(image_dict)
+            try:
+                image_dict = self._process_image(img_data, content_type)
+                content.append(image_dict)
+            except Exception as e:
+                if not self.config.ignore_unsupported_image:
+                    raise
+                content.append({
+                    'type': 'text',
+                    'text': f'unsupported {content_type!r} image {alt_text!r}: {e}'
+                })
 
             last_end = match.end()
 
