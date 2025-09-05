@@ -123,6 +123,9 @@ class DocumentConverterResult:
         chunks = []
 
         for markdown_chunk in self.markdown_chunk_list:
+            if isinstance(markdown_chunk, Chunk):
+                chunks.append(markdown_chunk.model_copy(deep=True))
+                continue
             if markdown_chunk.chunk_modality == "text":
                 # Create text chunk
                 text_content = {
