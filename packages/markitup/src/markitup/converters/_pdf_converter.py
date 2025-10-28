@@ -93,9 +93,13 @@ class PdfConverter(DocumentConverter):
             # IMAGE CHUNK
             image_chunk_list = []
             for image in pdf_dict['images']:
-                image_md_chunk = image_dict_to_chunk(
-                    image_dict=all_blocks_tuple_list['blocks'][image['number']], page_id=idx
-                )
+                try:
+                    image_md_chunk = image_dict_to_chunk(
+                        image_dict=all_blocks_tuple_list['blocks'][image['number']], page_id=idx
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to convert image dict to chunk: {e}")
+                    continue
                 if image_md_chunk:
                     image_chunk_list.append(image_md_chunk)
             page_chunk_list = sort_chunks_based_on_bbox_id(
