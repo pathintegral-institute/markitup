@@ -3,7 +3,6 @@ import pymupdf4llm
 from collections import Counter
 from .._base_converter import DocumentConverter, DocumentConverterResult
 from .._schemas import StreamInfo, Config, MarkdownChunk, BBox
-from ._html_converter import HtmlConverter
 import fitz
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import base64
@@ -56,7 +55,7 @@ class PdfConverter(DocumentConverter):
                 config=self.config,
                 stream_info=stream_info,
             )
-        
+
         pdf_dict_list = pymupdf4llm.to_markdown(
             doc,
             ignore_graphics=True,
@@ -64,11 +63,18 @@ class PdfConverter(DocumentConverter):
             extract_words=True,
             embed_images=False,
             page_chunks=True)
-        
+
         final_chunk_list = []
         for idx, pdf_dict in enumerate(pdf_dict_list):
             md_content = pdf_dict['text']
             words_tuple_list = pdf_dict['words']
+
+            # 处理无文本内容的页面：使用整页截图作为替代
+            if not md_content or not md_content.strip():
+                image_chunk = process_empty_page_as_image(doc.load_page(idx), idx, len(final_chunk_list))
+                if image_chunk:
+                    final_chunk_list.append(image_chunk)
+                continue
 
             text_chunk_list = self._chunker.split_text(md_content)
             categorical_list = create_categorical_mapping(text_chunk_list, words_tuple_list= words_tuple_list)
@@ -89,7 +95,7 @@ class PdfConverter(DocumentConverter):
                 except Exception as e:
                     logger.warning(f"Failed to process text chunk: {e}")
                     continue
-            
+
             # IMAGE CHUNK
             image_chunk_list = []
             for image in pdf_dict['images']:
@@ -106,7 +112,7 @@ class PdfConverter(DocumentConverter):
                 unsorted_chunks=text_chunk_list+image_chunk_list,
                 offset=len(final_chunk_list))
             final_chunk_list.extend(page_chunk_list)
-        
+
         return DocumentConverterResult(
             markdown_chunk_list=final_chunk_list,
             config=self.config,
@@ -117,10 +123,10 @@ class PdfConverter(DocumentConverter):
 def image_dict_to_chunk(image_dict: Dict[str, Any], page_id: int) -> MarkdownChunk:
     """
     Convert an image dictionary to a Chunk with markdown inline image content.
-    
+
     Args:
         image_dict: Dictionary containing image data and metadata from the PDF parser
-    
+
     Returns:
         Chunk: A Chunk object with the image content and metadata
     """
@@ -136,7 +142,7 @@ def image_dict_to_chunk(image_dict: Dict[str, Any], page_id: int) -> MarkdownChu
     else:
         # Fallback if no image data is available
         markdown_content = "![Image not available]()"
-    
+
     try:
         return MarkdownChunk(
             chunk_modality='image',
@@ -155,18 +161,18 @@ def create_categorical_mapping(chunk_list: list[str],
                                words_tuple_list: list[Tuple[float, float, float, float, str, int, int, int]]) ->List[int]:
     """
     Create a mapping between text chunks and word positions that preserves proportional distribution.
-    
+
     This function takes text chunks and maps them to individual word positions in words_tuple_list,
     ensuring each chunk occupies a proportional amount of space relative to its word count.
-    
+
     Args:
         chunk_list: List of text chunks (strings) to be mapped
         words_tuple_list: List of word tuples representing the target word sequence
-    
+
     Returns:
         List of chunk indices (same length as words_tuple_list)
         where each position contains the index of the chunk that covers that word
-    
+
     Example:
         >>> chunk_list = ["Hello world", "This is a test"]
         >>> words_tuple_list = [("Hello",), ("world",), ("This",), ("is",), ("a",), ("test",)]
@@ -174,7 +180,7 @@ def create_categorical_mapping(chunk_list: list[str],
         >>> categorical_list
         [0, 0, 1, 1, 1, 1]  # First two words map to chunk 0, rest to chunk 1
         The function also works for cases where the number do not match by linear approximation
-    
+
     Note:
         The function guarantees that len(categorical_list) == len(words_tuple_list)
         by using proportional scaling with rounding adjustments.
@@ -186,18 +192,18 @@ def create_categorical_mapping(chunk_list: list[str],
             cumulative_chunk_word_count.append(len(chunk.split()))
         else:
             cumulative_chunk_word_count.append(len(chunk.split())+cumulative_chunk_word_count[idx-1])
-    
+
     # Calculate bbox word count
     bbox_word_count = len(words_tuple_list)
-    
+
     # Calculate scale factor
     scale_factor = bbox_word_count / cumulative_chunk_word_count[-1]
-    
+
     # Create categorical list
     categorical_list = []
     for idx, cumulative_cwc in enumerate(cumulative_chunk_word_count):
         categorical_list += int(round(scale_factor * cumulative_cwc) - len(categorical_list)) * [idx]
-    
+
     return categorical_list
 
 
@@ -205,40 +211,40 @@ def determine_block_categories(words_tuple_list: List[Tuple[float, float, float,
                                categorical_list: List[int]) -> Dict[int, int]:
     """
     Determine the category for each block based on majority voting from words in that block.
-    
+
     Args:
         words_tuple_list: List of word tuples (x0, y0, x1, y1, "word", block_no, line_no, word_no)
         categorical_list: List of categories (same length as words_tuple_list)
-    
+
     Returns:
         Dictionary mapping block_no to its majority category
     """
     # Create a mapping of block_no to list of categories from words in that block
     block_to_categories = {}
-    
+
     # Iterate through words and their categories
     for i, word_tuple in enumerate(words_tuple_list):
         # Extract block_no from word tuple (index 5)
         block_no = word_tuple[5]
         category = categorical_list[i]
-        
+
         if block_no not in block_to_categories:
             block_to_categories[block_no] = []
-        
+
         block_to_categories[block_no].append(category)
-    
+
     # Determine majority category for each block
     block_categories = {}
-    
+
     for block_no, categories in block_to_categories.items():
         # Count occurrences of each category
         category_counts = Counter(categories)
-        
+
         # Get the category with the highest count (majority)
         majority_category = category_counts.most_common(1)[0][0]
-        
+
         block_categories[block_no] = majority_category
-    
+
     return block_categories
 
 
@@ -258,3 +264,36 @@ def sort_chunks_based_on_bbox_id(unsorted_chunks: List[MarkdownChunk], offset: i
         chunk.chunk_id = i + offset
 
     return sorted_chunks
+
+
+def process_empty_page_as_image(page: fitz.Page, page_id: int, chunk_id_offset: int) -> MarkdownChunk:
+    """
+    Process an empty page by taking a screenshot and creating an image chunk cover the whole page
+
+    Args:
+        page: The fitz.Page object
+        page_id: The page number (0-indexed)
+        chunk_id_offset: The starting ID for the new chunk
+
+    Returns:
+        MarkdownChunk: A chunk containing the page screenshot
+    """
+    try:
+        # Render page to image (default 72 dpi is usually sufficient for screen viewing)
+        pix = page.get_pixmap()
+        img_bytes = pix.tobytes("png")
+        base64_str = base64.b64encode(img_bytes).decode("utf-8")
+
+        markdown_content = f"![Page {page_id + 1} Scan](data:image/png;base64,{base64_str})"
+
+        return MarkdownChunk(
+            chunk_modality='image',
+            chunk_id=chunk_id_offset,
+            page_id=page_id,
+            content=markdown_content,
+            bbox_id_list=[0],  # Placeholder ID
+            bbox_list=[BBox(x0=page.rect.x0, y0=page.rect.y0, x1=page.rect.x1, y1=page.rect.y1)]
+        )
+    except Exception as e:
+        logger.warning(f"Failed to process empty page {page_id} as image: {e}")
+        return None
